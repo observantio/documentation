@@ -21,6 +21,14 @@ const RED = "#ef4444";
 const BLUE_GLOW = "rgba(59,130,246,0.25)";
 const RED_GLOW = "rgba(239,68,68,0.25)";
 
+function withBaseUrl(src: string) {
+  if (!src) return src;
+  if (/^(https?:)?\/\//.test(src) || src.startsWith("data:")) return src;
+  if (!src.startsWith("/")) return src;
+  const base = import.meta.env.BASE_URL || "/";
+  return `${base.replace(/\/$/, "")}/${src.replace(/^\//, "")}`;
+}
+
 function pathAccent(path: Path) {
   if (path === "understand") return BLUE;
   if (path === "use") return RED;
@@ -102,7 +110,7 @@ function SlideImage({ slide, accent }: { slide: SlideData; accent: string }) {
     <div className="mt-6 overflow-hidden rounded-2xl border" style={{ borderColor: accent + "35" }}>
       <div className="bg-black/40">
         <img
-          src={slide.image.src}
+          src={withBaseUrl(slide.image.src)}
           alt={slide.image.alt ?? "slide image"}
           className="w-full max-h-[420px] object-contain"
         />
@@ -117,7 +125,11 @@ function SlideGallery({ slide, accent }: { slide: SlideData; accent: string }) {
     <div className="mt-6 grid grid-cols-2 gap-3">
       {slide.gallery.map((g, i) => (
         <div key={i} className="overflow-hidden rounded-2xl border bg-black/30" style={{ borderColor: accent + "35" }}>
-          <img src={g.src} alt={g.alt ?? `gallery ${i + 1}`} className="w-full h-[180px] object-cover" />
+          <img
+            src={withBaseUrl(g.src)}
+            alt={g.alt ?? `gallery ${i + 1}`}
+            className="w-full h-[180px] object-cover"
+          />
           {g.alt && <div className="px-3 py-2 text-xs text-zinc-400 font-mono border-t" style={{ borderColor: accent + "20" }}>{g.alt}</div>}
         </div>
       ))}
@@ -160,7 +172,7 @@ function renderContent(slide: SlideData, accent: string) {
               {svc.image && (
                 <div className="rounded-t-2xl overflow-hidden">
                   <img
-                    src={svc.image.src}
+                    src={withBaseUrl(svc.image.src)}
                     alt={svc.image.alt ?? svc.name}
                     className="w-full object-contain my-3 block"
                   />
