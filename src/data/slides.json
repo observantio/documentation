@@ -87,7 +87,7 @@
             "Only trusted OTel collectors with valid x-otlp-token headers reach Tempo, Loki, and Mimir—no direct backend exposure.",
             "Tenant isolation is enforced at the gateway layer: each token is scoped to its org, preventing cross-tenant data leakage."
           ],
-          "tags": ["Envoy", "NGINX", "Token Validation", "Rate Limiting", "Tenant Isolation"]
+          "tags": ["Envoy", "Gateway-Auth", "Token Validation", "Rate Limiting", "Tenant Isolation"]
         }
       ]
     },
@@ -148,6 +148,26 @@
             "Silencing and routing rules are manageable without touching Alertmanager YAML directly."
           ],
           "tags": ["Slack/Jira", "Alert Routing", "InOps Board", "Silencing", "PagerDuty", "Incident Ownership"]
+        }
+      ]
+    },
+    {
+      "kicker": "Grafana Proxy",
+      "title": "RBAC-enforced access to Grafana.",
+      "type": "services",
+      "services": [
+        {
+          "name": "Grafana Proxy",
+          "tagline": "NGINX + Be Observant auth gate that enforces route-level permissions before traffic reaches Grafana.",
+          "image": { "src": "/grafana.png", "alt": "Grafana Proxy diagram" },
+          "bullets": [
+            "Every sensitive `/grafana/*` request is authorized via `/api/grafana/auth` using token/cookie context.",
+            "Launch flow uses `/api/grafana/bootstrap-session` to set a secure `beobservant_token` cookie for proxied Grafana access.",
+            "Path + method RBAC checks are enforced for dashboards, datasources, folders, and query routes.",
+            "Public dashboard links and snapshot endpoints are blocked by policy to prevent bypassing access controls.",
+            "Prometheus/Loki/Tempo datasource access is tenant-scoped (`X-Scope-OrgID`), while default/read-only datasources remain query-only."
+          ],
+          "tags": ["NGINX", "RBAC", "Auth Subrequest", "Session Bootstrap", "Policy Guardrails", "X-Scope-OrgID"]
         }
       ]
     },

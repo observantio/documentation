@@ -533,11 +533,11 @@ or sponsored by the owners of these projects.
 
 Relevant third-party software includes (but is not limited to):
 
-  Observability & Tracing  —  OpenTelemetry (OTel), Grafana, Loki,
-                               Tempo, Mimir, Alertmanager
-  Infrastructure & Data    —  Envoy, PostgreSQL, Redis
-  Application Frameworks   —  FastAPI and the Python ecosystem,
-                               React and the JavaScript ecosystem
+Observability & Tracing  —  OpenTelemetry (OTel), Grafana, Loki, Tempo, Mimir, Alertmanager
+
+Infrastructure & Data    —  Envoy, PostgreSQL, Redis and Nginx
+
+Application Frameworks   —  FastAPI and the Python ecosystem, React and the JavaScript ecosystem
 
 ────────────────────────────────────────
 ATTRIBUTION
