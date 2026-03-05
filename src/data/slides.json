@@ -1,0 +1,331 @@
+{
+  "understand": [
+    {
+      "kicker": "The Problem",
+      "title": "You're being taxed for observability you already paid for.",
+      "subtitle": "Every major vendor has drawn the same line: basic telemetry is free, but the moment you need security, multi-tenancy, or intelligence—you hit a paywall. The LGTM stack is free. The features that make it production-ready are not.",
+      "type": "bullets",
+      "bullets": [
+        "Grafana OSS gives you dashboards. Grafana Enterprise charges $25,000+ minimum for RBAC, SSO, and audit logs.",
+        "Datadog, New Relic, and Dynatrace bill per host, per GB ingested, per trace, per seat—costs that compound aggressively as you scale.",
+        "RCA on enterprise platforms is correlation-first, not causal. You still stitch context manually across tabs.",
+        "Teams bounce between Grafana, log explorers, trace viewers, ticketing tools, and Slack—no single plane of truth."
+      ]
+    },
+    {
+      "kicker": "The Grafana Tax",
+      "title": "$25,000 minimum to unlock what should be table stakes.",
+      "subtitle": "Grafana Enterprise locks core operational features behind a contract. The OSS version leaves you exposed or forces you to build your own security layer from scratch.",
+      "type": "metrics",
+      "metrics": [
+        { "value": "$25k+", "label": "Enterprise Minimum", "sub": "Before data retention, GB ingested, or per-seat costs stack" },
+        { "value": "0", "label": "OSS RBAC Teams", "sub": "Grafana OSS has no fine-grained team or route-level permissions" },
+        { "value": "Manual", "label": "SSO in OSS", "sub": "OIDC/SAML requires custom wiring—no native support" },
+        { "value": "None", "label": "Audit Logging", "sub": "No immutable audit trail in the free tier" }
+      ]
+    },
+    {
+      "kicker": "The SSO Tax",
+      "title": "OIDC and SAML are 'Enterprise Only'—for no good reason.",
+      "subtitle": "Single sign-on is a security baseline, not a premium feature. Yet every major observability vendor gates it behind their top tier. Your IdP is already running. You just can't connect it without paying.",
+      "type": "bullets",
+      "bullets": [
+        "Grafana OSS OIDC support is partial—no team sync, no group mapping, no MFA enforcement at the proxy layer.",
+        "Datadog SSO requires the Enterprise plan. New Relic gates SAML behind a dedicated add-on.",
+        "Be Observant ships native Keycloak OIDC out of the box—email-mapped, MFA-enforced, with local account fallback.",
+        "OIDC maps 1:1 to email. Bootstrap locally, claim via external IdP later—no re-provisioning required."
+      ]
+    },
+    {
+      "kicker": "The RBAC Tax",
+      "title": "Route-level permissions shouldn't cost five figures.",
+      "subtitle": "Production observability requires fine-grained access control. Who can query which tenant's logs? Who can silence alerts? Who can read traces for a specific service? OSS stacks have no answer. Enterprise stacks have an invoice.",
+      "type": "bullets",
+      "bullets": [
+        "Be Observant's RBAC operates at the route level—not just dashboard visibility, but actual API permission enforcement.",
+        "Users inherit permissions from groups. New accounts land in a 'provisioning' role until explicitly granted access.",
+        "Visibility scopes are explicit: Private (creator only), Group (read-only team share), or Tenant (org-wide read-only).",
+        "Every permission change, access request, and config mutation is immutably logged—no manual audit trail required."
+      ]
+    },
+    {
+      "kicker": "The Data Retention Tax",
+      "title": "You pay to keep your own data.",
+      "subtitle": "Managed observability vendors charge per GB ingested, per host, per trace—and then charge again to retain it past 15 days. Running LGTM yourself solves the ingestion cost. Be Observant solves everything on top of it.",
+      "type": "metrics",
+      "metrics": [
+        { "value": "$0", "label": "License Cost", "sub": "All Be Observant features ship free. Forever." },
+        { "value": "∞", "label": "Retention", "sub": "Keep data as long as your storage allows—no vendor limits" },
+        { "value": "100%", "label": "OTLP Security", "sub": "Every trace and log validated via tenant-scoped gateway tokens" },
+        { "value": "5 min", "label": "Local Setup", "sub": "From zero to a secured, proxied LGTM stack" }
+      ]
+    },
+    {
+      "kicker": "What Be Observant Is",
+      "title": "A Control Plane and Hardened Proxy for the LGTM stack.",
+      "subtitle": "Be Observant doesn't replace Loki, Mimir, or Tempo. It wraps them with the security, multi-tenancy, and intelligence layer that transforms a raw OSS stack into a capable observability platform—at zero license cost. The project is actively developed and currently in beta.",
+      "type": "bullets",
+      "bullets": [
+        "Hardened Gateway: Envoy-based OTLP proxy with token validation, rate limiting, and tenant isolation baked in.",
+        "Unified Control Plane: FastAPI orchestration layer for metrics, logs, and traces—one brain, not three tabs.",
+        "Multi-Tenancy by Design: Logically separate orgs and teams with zero config drift and key-scoped data access.",
+        "Vendor Agnostic: Swap Mimir for VictoriaMetrics without touching your security or AI layer."
+      ]
+    },
+    {
+      "kicker": "The Gateway Service",
+      "title": "The Hardened OTLP Gateway.",
+      "type": "services",
+      "services": [
+        {
+          "name": "Gateway-Auth & OTLP-Gateway",
+          "tagline": "The front door to your telemetry. Nothing gets in without a valid token.",
+          "image": { "src": "/oltp.png", "alt": "OTLP Gateway diagram" },
+          "bullets": [
+            "Envoy-based OTLP gateway supports rate limiting, token validation, and request transformation at scale.",
+            "Gateway-Auth validates every incoming request by checking against Be Observant's DB, with token caching for performance.",
+            "Only trusted OTel collectors with valid x-otlp-token headers reach Tempo, Loki, and Mimir—no direct backend exposure.",
+            "Tenant isolation is enforced at the gateway layer: each token is scoped to its org, preventing cross-tenant data leakage."
+          ],
+          "tags": ["Envoy", "NGINX", "Token Validation", "Rate Limiting", "Tenant Isolation"]
+        }
+      ]
+    },
+    {
+      "kicker": "The Control Plane",
+      "title": "One brain for your entire observability stack.",
+      "type": "services",
+      "services": [
+        {
+          "name": "Be Observant Control Plane",
+          "tagline": "Centralized FastAPI orchestration that proxies and scopes access to Grafana, enforces RBAC, and federates queries across all three data planes.",
+          "image": { "src": "/beobservant.png", "alt": "Control Plane diagram" },
+          "bullets": [
+            "Federated query engine: one search pulls correlated data from Loki, Tempo, and Mimir simultaneously, scoped to the active API key.",
+            "Grafana is never exposed directly—all traffic flows through an RBAC-enforced NGINX proxy layer.",
+            "Audit logging via immutable DB triggers: every config change, access request, and route call is permanently recorded.",
+            "Key Management (KBAC): create tenant-specific API keys for full multi-tenant isolation without infra changes.",
+            "Group and user management with route-level RBAC—not just dashboard visibility, actual API enforcement."
+          ],
+          "tags": ["Multi-Tenancy", "Audit Logs", "Federated Query", "Grafana Proxy", "Key Management", "RBAC", "Group Management"]
+        }
+      ]
+    },
+    {
+      "kicker": "AIOps — BeCertain",
+      "title": "Root cause analysis that doesn't ask you to guess.",
+      "type": "services",
+      "services": [
+        {
+          "name": "BeCertain",
+          "image": { "src": "/becertain.png", "alt": "BeCertain diagram" },
+          "tagline": "An autonomous RCA engine that ranks hypotheses with evidence links—not a dashboard you still have to read.",
+          "bullets": [
+            "Asynchronous RCA jobs analyze anomaly groups, topology blast radius, and causal chains across all three data planes.",
+            "Statistical Z-score anomaly detection runs continuously across metrics, logs, and traces.",
+            "Predictive forecasting surfaces capacity bottlenecks before they trigger paged alerts.",
+            "Evidence is auto-attached to each hypothesis: log lines, spans, and metric spikes linked directly to the ranked root cause.",
+            "Closing an incident requires a resolution note—this populates a long-term knowledge base for future RCA context."
+          ],
+          "tags": ["AI-RCA", "Anomaly Detection", "Predictive Forecasting", "Evidence Linking", "Knowledge Base"]
+        }
+      ]
+    },
+    {
+      "kicker": "Alert Intelligence — BeNotified",
+      "title": "Alertmanager with a brain and an incident board.",
+      "type": "services",
+      "services": [
+        {
+          "name": "BeNotified",
+          "tagline": "Built on Alertmanager, BeNotified handles complex routing, Slack/Jira syncing, and collaborative incident management—ensuring the right team gets the right context at the right time.",
+          "image": { "src": "/benotified.png", "alt": "BeNotified diagram" },
+          "bullets": [
+            "Ingests alerts from Grafana Alertmanager and routes to Slack, Jira, PagerDuty, Teams, or email with full context.",
+            "InOps board: collaborative incident management with task assignment, timeline tracking, and resolution workflows.",
+            "Ownership, permissions, and routing are enforced per org—cross-team alert leakage is prevented by design.",
+            "Channel configurations are encrypted and scoped to their owner unless visibility is explicitly elevated.",
+            "Silencing and routing rules are manageable without touching Alertmanager YAML directly."
+          ],
+          "tags": ["Slack/Jira", "Alert Routing", "InOps Board", "Silencing", "PagerDuty", "Incident Ownership"]
+        }
+      ]
+    },
+    {
+      "kicker": "Stack Comparison",
+      "title": "The logical choice isn't even close.",
+      "type": "table",
+      "table": {
+        "columns": ["Feature", "Grafana OSS", "Grafana Enterprise", "Be Observant"],
+        "rows": [
+          ["Advanced RBAC / Route Permissions", "❌ None", "✅ Paid", "✅ Free"],
+          ["OIDC / SAML / MFA", "⚠️ Partial / Manual", "✅ Paid", "✅ Native (Keycloak)"],
+          ["Immutable Audit Logging", "❌ None", "✅ Paid", "✅ Free"],
+          ["Hardened OTLP Ingest Proxy", "❌ DIY", "⚠️ Partial", "✅ Built-in"],
+          ["Multi-Tenant Key Isolation", "❌ None", "⚠️ Limited", "✅ KBAC (Free)"],
+          ["Automated RCA Engine", "❌ Manual", "⚠️ Limited", "✅ BeCertain AI"],
+          ["Incident Orchestration Board", "⚠️ Basic Alerting", "✅ Paid", "✅ BeNotified (Free)"],
+          ["Data Retention Limits", "None (self-hosted)", "Contractual", "None (self-hosted)"],
+          ["Minimum License Cost", "$0", "$25,000+/yr", "$0"]
+        ]
+      }
+    },
+    {
+      "kicker": "Developer Experience",
+      "title": "The End Goal of Productionizing",
+      "type": "code",
+      "codeLabel": "Deploy the full stack with the control plane",
+      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'"
+    }
+  ],
+  "use": [
+    {
+      "kicker": "Beta — Active Project",
+      "title": "Be Observant is in active development. Built for experimentation and homelab use.",
+      "subtitle": "The project is currently in beta. It is not yet hardened for production deployments—there is a single docker-compose and the focus right now is on features, stability, and feedback. If you hit something broken, open an issue.",
+      "type": "bullets",
+      "bullets": [
+        "One docker-compose spins up the full stack: Be Observant, BeCertain, BeNotified, Loki, Mimir, Tempo, Grafana, and the OTLP gateway.",
+        "Intended for local testing, homelab use, and experimentation—not production traffic.",
+        "The installer handles environment bootstrapping and prompts for credentials. Min 16-character password enforced.",
+        "Four ports need to be free: 5173 (UI), 8080 (Grafana Proxy), 4319 (Control Plane API), 4320 (OTLP Gateway).",
+        "Report issues at https://github.com/observantio/beobservant/issues development means feedback directly shapes what ships next."
+      ]
+    },
+    {
+      "kicker": "Getting Started",
+      "title": "Up and running in under 5 minutes.",
+      "type": "code",
+      "codeLabel": "Two ways to start — pick one",
+      "code": "# Option A: curl installer (quickest)\n# Prompts for a username and password (min 16 chars)\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Option B: clone and run manually\ngit clone https://github.com/observantio/beobservant Observantio && cd Observantio\ngit clone https://github.com/observantio/becertain BeCertain\ngit clone https://github.com/observantio/benotified BeNotified\n\ncp .env.example .env\n\n# Generate your Fernet encryption key and set it as DATA_ENCRYPTION_KEY in .env\npython3 -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"\n\ndocker compose up -d --build\n\n# Verify everything is up\ndocker compose ps\ncurl http://localhost:4319/ready"
+    },
+    {
+      "kicker": "Access the Platform",
+      "title": "Three interfaces. One stack.",
+      "subtitle": "Once containers are healthy, everything is reachable locally. The Grafana proxy requires an active UI session—it will 401 if you try to hit it directly without logging in first.",
+      "type": "bullets",
+      "bullets": [
+        "UI Login — http://localhost:5173 — this is your main entry point for all control plane features.",
+        "Grafana Proxy — http://localhost:8080/grafana/ — RBAC-enforced, requires a valid UI session token.",
+        "Control Plane API Docs — http://localhost:4319/docs — interactive Swagger UI for exploring the full API.",
+        "OTLP Gateway — http://localhost:4320 — the only port your OTel collectors need to reach; validate with x-otlp-token."
+      ]
+    },
+    {
+      "kicker": "First Login",
+      "title": "Authentication, bootstrap admin, and OIDC mapping.",
+      "subtitle": "The bootstrap admin is created locally on first run. Understanding the auth model early avoids confusion later.",
+      "type": "bullets",
+      "bullets": [
+        "Log in at http://localhost:5173 with the credentials you set during install.",
+        "OIDC maps 1:1 to email. Create a local account first, then sign in via OIDC with the same email—they merge automatically with no re-provisioning.",
+        "New users default to a 'provisioning' role with no permissions until an admin grants group membership.",
+        "For Keycloak: configure your realm and client, set OIDC_* vars in .env. A local Keycloak instance is available as a compose profile.",
+        "MFA (TOTP) can be enforced for local accounts. Set SKIP_LOCAL_MFA_FOR_EXTERNAL=true if your IdP already handles MFA."
+      ]
+    },
+    {
+      "kicker": "Key Management",
+      "title": "Create a tenant API key. Everything flows from here.",
+      "subtitle": "API keys (KBAC) are the unit of tenant isolation. Your OTel collector, datasource, and active scope in the UI all derive from the same key.",
+      "type": "workflow",
+      "workflowSteps": [
+        {
+          "label": "Navigate to API Keys",
+          "detail": "In the UI sidebar, open Key Management. Create a new key and assign it to an org and group. Set an expiry if needed."
+        },
+        {
+          "label": "Configure your OTel collector",
+          "detail": "The key creation screen generates a ready-to-use OTel config snippet. Paste it into your collector's exporter config as the x-otlp-token header value."
+        },
+        {
+          "label": "Set active scope in the UI",
+          "detail": "Use the top nav key switcher to set your active API key. All metric, log, and trace queries in the UI will now filter to that key's tenant scope."
+        },
+        {
+          "label": "Connect Grafana datasource",
+          "detail": "Add your Loki, Mimir, or Tempo datasource in Grafana using the proxied URLs and the same API key. Click 'Open in Grafana' from the control plane to launch a scoped session."
+        }
+      ]
+    },
+    {
+      "kicker": "Investigating with BeCertain",
+      "title": "Trigger an RCA job when something goes wrong.",
+      "subtitle": "BeCertain runs asynchronous analysis across your metrics, logs, and traces. Don't run it on empty data—a meaningful dataset is required to reduce false positive hypotheses.",
+      "type": "workflow",
+      "workflowSteps": [
+        {
+          "label": "Navigate to the RCA page",
+          "detail": "Select the affected service and set a lookback window (e.g., 1h). Ensure your active API key scope matches the environment where the incident occurred."
+        },
+        {
+          "label": "Trigger the analysis job",
+          "detail": "Submit the job. BeCertain asynchronously queries Loki, Tempo, and Mimir, running Z-score anomaly detection and causal chain analysis across all three planes."
+        },
+        {
+          "label": "Review ranked hypotheses",
+          "detail": "Results appear as a ranked list of root cause candidates, each with linked evidence: specific log lines, trace spans, and metric spikes that support the hypothesis."
+        },
+        {
+          "label": "Promote to incident",
+          "detail": "Confirm the root cause and promote it to the InOps incident board. The evidence bundle travels with it—no re-hunting required."
+        }
+      ]
+    },
+    {
+      "kicker": "Incident Management — InOps",
+      "title": "From alert to resolution. Collaborative by design.",
+      "type": "workflow",
+      "workflowSteps": [
+        {
+          "label": "Alerts populate the InOps board automatically",
+          "detail": "Alerts from Grafana Alertmanager are ingested by BeNotified and routed to the InOps board. Routing rules, ownership, and channel config are managed per org."
+        },
+        {
+          "label": "Assign and collaborate",
+          "detail": "Add notes, assign teammates, and maintain a clear event timeline directly on the incident card. No Slack backscroll required."
+        },
+        {
+          "label": "Route notifications",
+          "detail": "Configure channels (Slack, Jira, PagerDuty, Teams, Email) in BeNotified settings. Channel configs are encrypted and scoped to their owner."
+        },
+        {
+          "label": "Close with a resolution note",
+          "detail": "Closing an incident requires a resolution note. This is mandatory—it seeds the long-term knowledge base that BeCertain uses for future RCA context."
+        }
+      ]
+    },
+    {
+      "kicker": "Workflow Summary",
+      "title": "What changes when your team has Be Observant.",
+      "type": "table",
+      "table": {
+        "columns": ["During incident", "Without Be Observant", "With Be Observant"],
+        "rows": [
+          ["First 5 minutes", "Open 3–5 tools, hunt for context manually", "Trigger RCA, get ranked hypotheses + evidence links"],
+          ["Evidence gathering", "Manual query loops across log explorer, traces, metrics", "Evidence auto-attached: log lines, spans, metric spikes"],
+          ["Team coordination", "Long Slack backscroll, lost context", "Report posted to InOps board with full timeline"],
+          ["Notification routing", "Manual PagerDuty/Jira wiring per team", "BeNotified routes by org ownership and severity"],
+          ["Next actions", "Tribal knowledge and guesswork", "Suggested actions + blast radius from BeCertain"],
+          ["Post-incident", "Retro doc in a Google Doc nobody reads", "Resolution note required—feeds knowledge base"]
+        ]
+      }
+    },
+    {
+      "kicker": "Troubleshooting",
+      "title": "Common issues and where to look.",
+      "type": "table",
+      "table": {
+        "columns": ["Symptom", "Likely Cause", "Fix"],
+        "rows": [
+          ["403 Forbidden on API", "Tenant scope mismatch or expired API key", "Check active key in top nav; verify key hasn't expired in Key Management"],
+          ["403 on Grafana Proxy (8080)", "No valid UI session token", "Log in via 5173 first; the proxy requires a session token from the control plane"],
+          ["No data in Grafana", "Wrong datasource URL or key mismatch", "curl http://localhost:4319/ready; verify datasource uses proxied URL + correct API key"],
+          ["RCA job hangs", "BeCertain service unreachable or token mismatch", "docker compose ps; check BeCertain logs; verify token scope matches the data plane"],
+          ["OTLP data not arriving", "Gateway rejecting token", "Check x-otlp-token header in collector config; verify token exists and is active in Key Management"],
+          ["ALLOWLIST 403 (fail-closed)", "IP not in allowlist, ALLOWLIST_FAIL_OPEN=false", "Add your IP to the relevant allowlist env var or set ALLOWLIST_FAIL_OPEN=true temporarily"]
+        ]
+      }
+    }
+  ]
+}
