@@ -27,6 +27,7 @@ export interface SlideData {
   title: string;
   subtitle?: string;
   type: SlideType;
+  links?: { label: string; href: string; description?: string }[];
 
   bullets?: string[];
 

@@ -175,7 +175,19 @@
       "title": "The End Goal of Productionizing",
       "type": "code",
       "codeLabel": "Deploy the full stack with the control plane",
-      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'"
+      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'",
+      "links": [
+        {
+          "label": "Read Deployment Guide",
+          "href": "https://github.com/observantio/beobservant/blob/main/USER_GUIDE.md",
+          "description": "Step-by-step setup, first login, key management, and troubleshooting."
+        },
+        {
+          "label": "Explore the Repository",
+          "href": "https://github.com/observantio/beobservant",
+          "description": "Architecture, services, and source code."
+        }
+      ]
     }
   ],
   "use": [
@@ -189,7 +201,14 @@
         "Intended for local testing, homelab use, and experimentation—not production traffic.",
         "The installer handles environment bootstrapping and prompts for credentials. Min 16-character password enforced.",
         "Four ports need to be free: 5173 (UI), 8080 (Grafana Proxy), 4319 (Control Plane API), 4320 (OTLP Gateway).",
-        "Report issues at https://github.com/observantio/beobservant/issues development means feedback directly shapes what ships next."
+        "Feedback is critical during beta: issues and suggestions directly shape what ships next."
+      ],
+      "links": [
+        {
+          "label": "Report an Issue",
+          "href": "https://github.com/observantio/beobservant/issues",
+          "description": "Found a bug or deployment problem? Open an issue."
+        }
       ]
     },
     {
@@ -326,6 +345,39 @@
           ["ALLOWLIST 403 (fail-closed)", "IP not in allowlist, ALLOWLIST_FAIL_OPEN=false", "Add your IP to the relevant allowlist env var or set ALLOWLIST_FAIL_OPEN=true temporarily"]
         ]
       }
+    },
+    {
+      "kicker": "Next Step",
+      "title": "You're ready to run and improve Be Observant.",
+      "subtitle": "Use this stack locally, validate your flows, and help shape the roadmap.",
+      "type": "bullets",
+      "bullets": [
+        "Run your own telemetry through the OTLP gateway and validate tenant isolation with API keys.",
+        "Walk one full incident cycle: alert -> RCA -> incident collaboration -> resolution note.",
+        "Harden your deployment using USER_GUIDE production checklist before wider rollout."
+      ],
+      "links": [
+        {
+          "label": "Star the Repo",
+          "href": "https://github.com/observantio/beobservant",
+          "description": "Support the project and follow updates."
+        },
+        {
+          "label": "Open Issues / Feature Requests",
+          "href": "https://github.com/observantio/beobservant/issues",
+          "description": "Share bugs, ideas, and deployment feedback."
+        },
+        {
+          "label": "Read the User Guide",
+          "href": "https://github.com/observantio/beobservant/blob/main/USER_GUIDE.md",
+          "description": "Detailed operator workflows and hardening guidance."
+        },
+        {
+          "label": "Project README",
+          "href": "https://github.com/observantio/beobservant/blob/main/README.md",
+          "description": "High-level architecture and quick start."
+        }
+      ]
     }
   ]
 }

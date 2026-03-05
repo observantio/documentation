@@ -137,6 +137,39 @@ function SlideGallery({ slide, accent }: { slide: SlideData; accent: string }) {
   );
 }
 
+function SlideLinks({ slide, accent }: { slide: SlideData; accent: string }) {
+  if (!slide.links?.length) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {slide.links.map((item) => (
+        <a
+          key={`${item.label}-${item.href}`}
+          href={item.href}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-2xl border p-4 bg-retro-bg/40 hover:bg-retro-bg/70 transition-colors"
+          style={{ borderColor: accent + "35" }}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold" style={{ color: accent }}>
+              {item.label}
+            </div>
+            <ArrowRight className="h-4 w-4 text-retro-dim" />
+          </div>
+          {item.description && (
+            <div className="mt-2 text-xs text-zinc-400 leading-relaxed">
+              {item.description}
+            </div>
+          )}
+          <div className="mt-2 text-[11px] font-mono text-retro-dim break-all">
+            {item.href}
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function renderContent(slide: SlideData, accent: string) {
   switch (slide.type) {
     case "bullets":
@@ -858,7 +891,12 @@ export default function App() {
                     </p>
                   )}
 
-                  {s ? renderContent(s, accent) : null}
+                  {s ? (
+                    <>
+                      {renderContent(s, accent)}
+                      <SlideLinks slide={s} accent={accent} />
+                    </>
+                  ) : null}
                 </motion.div>
               </AnimatePresence>
             </div>
