@@ -195,7 +195,7 @@
       "title": "The End Goal of Productionizing",
       "type": "code",
       "codeLabel": "Deploy the full stack with the control plane",
-      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'",
+      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py\npython3 /tmp/install.py\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'",
       "links": [
         {
           "label": "Read Deployment Guide",
@@ -236,7 +236,7 @@
       "title": "Up and running in under 5 minutes.",
       "type": "code",
       "codeLabel": "Two ways to start — pick one",
-      "code": "# Option A: curl installer (quickest)\n# Prompts for a username and password (min 16 chars)\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3\n\n# Option B: clone and run manually\ngit clone https://github.com/observantio/beobservant Observantio && cd Observantio\ngit clone https://github.com/observantio/becertain BeCertain\ngit clone https://github.com/observantio/benotified BeNotified\n\ncp .env.example .env\n\n# Generate your Fernet encryption key and set it as DATA_ENCRYPTION_KEY in .env\npython3 -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"\n\ndocker compose up -d --build\n\n# Verify everything is up\ndocker compose ps\ncurl http://localhost:4319/ready"
+      "code": "# Option A: curl installer (quickest)\n# Prompts for a username and password (min 16 chars)\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py\npython3 /tmp/install.py\n\n# Option B: clone and run manually\ngit clone https://github.com/observantio/beobservant Observantio && cd Observantio\ngit clone https://github.com/observantio/becertain BeCertain\ngit clone https://github.com/observantio/benotified BeNotified\n\ncp .env.example .env\n\n# Generate your Fernet encryption key and set it as DATA_ENCRYPTION_KEY in .env\npython3 -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"\n\ndocker compose up -d --build\n\n# Verify everything is up\ndocker compose ps\ncurl http://localhost:4319/ready"
     },
     {
       "kicker": "Access the Platform",

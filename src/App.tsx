@@ -386,7 +386,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(
-      "curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3"
+      "curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py && python3 /tmp/install.py"
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -487,7 +487,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
         <div className="mt-8 flex flex-col items-center">
           <div className="relative w-full ">
             <pre className="rounded-2xl bg-black/80 px-5 py-3 font-mono text-xs text-zinc-200 border border-retro-border">
-              <code>curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py | python3</code>
+              <code>curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py && python3 /tmp/install.py</code>
             </pre>
             <button
               onClick={handleCopy}
