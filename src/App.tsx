@@ -73,8 +73,8 @@ function GenericTable({ slide, accent }: { slide: SlideData; accent: string }) {
   if (!t) return null;
 
   return (
-    <div className="mt-6 overflow-hidden rounded-2xl border" style={{ borderColor: accent + "35" }}>
-      <table className="w-full text-sm">
+    <div className="mt-6 overflow-x-auto rounded-2xl border" style={{ borderColor: accent + "35" }}>
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr style={{ backgroundColor: accent + "10", borderBottom: `1px solid ${accent}25` }}>
             {t.columns.map((c, i) => (
@@ -122,13 +122,13 @@ function SlideImage({ slide, accent }: { slide: SlideData; accent: string }) {
 function SlideGallery({ slide, accent }: { slide: SlideData; accent: string }) {
   if (!slide.gallery?.length) return null;
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3">
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
       {slide.gallery.map((g, i) => (
         <div key={i} className="overflow-hidden rounded-2xl border bg-black/30" style={{ borderColor: accent + "35" }}>
           <img
             src={withBaseUrl(g.src)}
             alt={g.alt ?? `gallery ${i + 1}`}
-            className="w-full h-[180px] object-cover"
+            className="w-full h-[180px] sm:h-[200px] object-cover"
           />
           {g.alt && <div className="px-3 py-2 text-xs text-zinc-400 font-mono border-t" style={{ borderColor: accent + "20" }}>{g.alt}</div>}
         </div>
@@ -186,7 +186,7 @@ function renderContent(slide: SlideData, accent: string) {
 
     case "metrics":
       return (
-        <div className="mt-8 grid grid-cols-2 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {slide.metrics?.map((m, i) => (
             <div key={i} className="rounded-2xl border bg-retro-bg/40 p-5" style={{ borderColor: accent + "35" }}>
               <div className="text-3xl sm:text-4xl font-bold font-mono" style={{ color: accent }}>{m.value}</div>
@@ -235,8 +235,8 @@ function renderContent(slide: SlideData, accent: string) {
 
     case "comparison":
       return (
-        <div className="mt-6 overflow-hidden rounded-2xl border" style={{ borderColor: accent + "35" }}>
-          <table className="w-full text-sm">
+        <div className="mt-6 overflow-x-auto rounded-2xl border" style={{ borderColor: accent + "35" }}>
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: accent + "25", backgroundColor: accent + "10" }}>
                 <th className="py-3 px-4 text-left font-mono text-xs uppercase tracking-wider text-retro-dim">Feature</th>
@@ -331,8 +331,8 @@ function renderContent(slide: SlideData, accent: string) {
 
     case "savings":
       return (
-        <div className="mt-6 overflow-hidden rounded-2xl border" style={{ borderColor: accent + "35" }}>
-          <table className="w-full text-sm">
+        <div className="mt-6 overflow-x-auto rounded-2xl border" style={{ borderColor: accent + "35" }}>
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr style={{ backgroundColor: accent + "10", borderBottom: `1px solid ${accent}25` }}>
                 <th className="py-2.5 px-4 text-left font-mono text-xs uppercase tracking-wider text-retro-dim">Metric</th>
@@ -393,7 +393,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
   };
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6">
       <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>
@@ -402,7 +402,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 text-center max-w-2xl px-6 py-7 rounded-3xl border bg-zinc-950/90 backdrop-blur-sm"
+        className="relative z-10 w-full max-w-2xl text-center px-4 py-6 sm:px-6 sm:py-7 rounded-3xl border bg-zinc-950/90 backdrop-blur-sm"
         style={{ borderColor: "#ffffff1f", boxShadow: "0 14px 48px rgba(0,0,0,0.45)" }}
       >
         <div className="flex items-center justify-center gap-2 mb-6">
@@ -410,19 +410,19 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
           <span className="text-xs font-mono uppercase tracking-[0.25em] text-retro-dim">BeObservant</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-4">Choose your path</h1>
-        <p className="text-retro-dim text-base sm:text-lg mb-12 max-w-md mx-auto">
+        <h1 className="text-3xl sm:text-6xl font-bold tracking-tight mb-4">Choose your path</h1>
+        <p className="text-retro-dim text-sm sm:text-lg mb-8 sm:mb-12 max-w-md mx-auto">
           Two pills. One decision. Your journey is tailored to what you actually need.
         </p>
 
-        <div className="grid sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onHoverStart={() => setHovered("understand")}
             onHoverEnd={() => setHovered(null)}
             onClick={() => onChoose("understand")}
-            className="group relative rounded-3xl border p-7 text-left transition-all duration-300"
+            className="group relative rounded-3xl border p-5 sm:p-7 text-left transition-all duration-300"
             style={{
               borderColor: BLUE + "50",
               backgroundColor: hovered === "understand" ? BLUE + "18" : BLUE + "08",
@@ -456,7 +456,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
             onHoverStart={() => setHovered("use")}
             onHoverEnd={() => setHovered(null)}
             onClick={() => onChoose("use")}
-            className="group relative rounded-3xl border p-7 text-left transition-all duration-300"
+            className="group relative rounded-3xl border p-5 sm:p-7 text-left transition-all duration-300"
             style={{
               borderColor: RED + "50",
               backgroundColor: hovered === "use" ? RED + "18" : RED + "08",
@@ -486,8 +486,8 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
         </div>
 
         <div className="mt-8 flex flex-col items-center">
-          <div className="relative w-full ">
-            <pre className="rounded-2xl bg-zinc-950 px-5 py-3 font-mono text-xs text-zinc-200 border border-zinc-800 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
+          <div className="relative w-full">
+            <pre className="rounded-2xl bg-zinc-950 px-4 sm:px-5 py-3 font-mono text-[11px] sm:text-xs text-zinc-200 border border-zinc-800 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
               <code>curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py && python3 /tmp/install.py</code>
             </pre>
             <button
@@ -684,7 +684,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
   };
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-5 py-10">
+    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 py-8 sm:px-5 sm:py-10">
       <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>
@@ -697,7 +697,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
         transition={{ duration: 0.25 }}
         className="relative z-10 w-full max-w-2xl"
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4" style={{ color: accent }} />
             <span className="text-xs font-mono uppercase tracking-[0.2em]" style={{ color: accent }}>Legal Review</span>
@@ -706,7 +706,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
         </div>
 
         <div className="rounded-3xl border overflow-hidden bg-zinc-950/95 backdrop-blur-sm" style={{ borderColor: accent + "40", boxShadow: `0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px ${accent}20` }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: accent + "25", backgroundColor: accent + "08" }}>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b" style={{ borderColor: accent + "25", backgroundColor: accent + "08" }}>
             <span className="text-xs font-mono text-retro-dim">BEOBSERVANT / {docTitle}</span>
             <div className="flex items-center gap-1.5">
               <FileText className="h-3.5 w-3.5 text-retro-dim" />
@@ -717,28 +717,28 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="px-6 py-5 overflow-y-auto font-mono text-xs scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-600 leading-relaxed text-zinc-300 bg-retro-bg"
+            className="px-4 sm:px-6 py-5 overflow-y-auto font-mono text-xs scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-600 leading-relaxed text-zinc-300 bg-retro-bg"
             style={{ maxHeight: "420px" }}
           >
             <pre className="whitespace-pre-wrap break-words">{docText}</pre>
             <div className="h-8" />
           </div>
 
-          <div className="border-t px-6 py-4 flex items-center justify-between gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
+          <div className="border-t px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
             <button
               onClick={isNotice ? onBack : () => setStep("notice")}
-              className="inline-flex items-center gap-2 text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-3 py-2"
+              className="inline-flex items-center gap-2 text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-3 py-2 min-h-10"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {isNotice ? "Back to paths" : "Back to Notice"}
             </button>
 
-            <div className="flex items-center gap-3">
-              {!scrolledToBottom && <span className="text-xs font-mono text-retro-dim animate-pulse">↓ scroll to read</span>}
+            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+              {!scrolledToBottom && <span className="text-[11px] sm:text-xs font-mono text-retro-dim animate-pulse">↓ scroll to read</span>}
               <motion.button
                 animate={{ opacity: scrolledToBottom ? 1 : 0.35 }}
                 onClick={scrolledToBottom ? handlePrimary : undefined}
-                className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-mono font-semibold transition"
+                className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-mono font-semibold transition min-h-10"
                 style={{
                   borderColor: scrolledToBottom ? accent + "70" : accent + "30",
                   backgroundColor: scrolledToBottom ? accent + "20" : accent + "08",
@@ -783,6 +783,7 @@ export default function App() {
 
   const canPrev = slideIndex > 0;
   const canNext = slideIndex < total - 1;
+  const touchStartX = React.useRef<number | null>(null);
 
   const go = useCallback((n: number) => {
     if (total <= 0) return;
@@ -803,6 +804,20 @@ export default function App() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [canPrev, canNext, go, slideIndex]);
+
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.changedTouches[0]?.clientX ?? null;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null) return;
+    const endX = e.changedTouches[0]?.clientX;
+    if (typeof endX !== "number") return;
+    const delta = endX - touchStartX.current;
+    if (delta <= -60 && canNext) go(slideIndex + 1);
+    if (delta >= 60 && canPrev) go(slideIndex - 1);
+    touchStartX.current = null;
+  };
 
   if (!path) return <PillChoice onChoose={choosePath} />;
   if (!legalDone) return (
@@ -829,8 +844,8 @@ export default function App() {
         />
       </div>
 
-      <div className="relative mx-auto max-w-5xl px-5 py-8">
-        <header className="flex items-center justify-between gap-4">
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-5 py-6 sm:py-8">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-2xl border flex items-center justify-center" style={{ backgroundColor: accent + "15", borderColor: accent + "40", boxShadow: `0 6px 18px ${glow}` }}>
               <Sparkles className="h-5 w-5" style={{ color: accent }} />
@@ -841,16 +856,16 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 sm:gap-4">
             <button
               onClick={() => { setPath(null); setLegalDone(false); }}
-              className="text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-2.5 py-1.5"
+              className="text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-3 py-2 min-h-10"
             >
               ⇄ switch path
             </button>
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <div className="text-xs font-mono text-retro-dim">{slideIndex + 1} / {total}</div>
-              <div className="w-36 h-1.5 rounded-full bg-retro-panel border border-retro-border overflow-hidden">
+              <div className="w-24 sm:w-36 h-1.5 rounded-full bg-retro-panel border border-retro-border overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ backgroundColor: accent }}
@@ -864,7 +879,11 @@ export default function App() {
 
         <main className="mt-8">
           <div className="rounded-3xl border bg-zinc-950/90 overflow-hidden backdrop-blur-sm" style={{ borderColor: accent + "35", boxShadow: `0 16px 44px rgba(0,0,0,0.48), 0 0 0 1px ${accent}16` }}>
-            <div className="px-7 py-7 sm:px-10 sm:py-10 relative min-h-[520px]">
+            <div
+              className="px-4 py-6 sm:px-10 sm:py-10 relative min-h-[440px] sm:min-h-[520px]"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            >
               <Tick accent={accent} />
 
               <AnimatePresence mode="wait">
@@ -881,12 +900,12 @@ export default function App() {
                     </div>
                   )}
 
-                  <h1 className="mt-3 text-3xl sm:text-4xl font-bold tracking-tight max-w-3xl">
+                  <h1 className="mt-3 text-2xl sm:text-4xl font-bold tracking-tight max-w-3xl">
                     {s?.title}
                   </h1>
 
                   {s?.subtitle && (
-                    <p className="mt-4 text-base sm:text-lg text-zinc-300/90 max-w-3xl leading-relaxed">
+                    <p className="mt-4 text-sm sm:text-lg text-zinc-300/90 max-w-3xl leading-relaxed">
                       {s.subtitle}
                     </p>
                   )}
@@ -901,9 +920,9 @@ export default function App() {
               </AnimatePresence>
             </div>
 
-            <div className=" px-6 py-4 sm:px-10 flex items-center justify-between gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
+            <div className="px-4 py-4 sm:px-10 flex items-center justify-between gap-2 sm:gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
               <button
-                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-mono transition disabled:opacity-30"
+                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-mono transition disabled:opacity-30 min-h-10"
                 style={{ borderColor: canPrev ? accent + "50" : "transparent", color: canPrev ? accent : undefined }}
                 onClick={() => canPrev && go(slideIndex - 1)}
                 disabled={!canPrev}
@@ -912,7 +931,7 @@ export default function App() {
                 Prev
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto px-1">
                 {slides.map((_, i) => (
                   <button
                     key={i}
@@ -930,7 +949,7 @@ export default function App() {
               </div>
 
               <button
-                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-mono transition disabled:opacity-30"
+                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-mono transition disabled:opacity-30 min-h-10"
                 style={{ borderColor: canNext ? accent + "50" : "transparent", color: canNext ? accent : undefined }}
                 onClick={() => canNext && go(slideIndex + 1)}
                 disabled={!canNext}
@@ -941,8 +960,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between px-1">
-            <div className="text-xs font-mono text-retro-dim">← → keys to navigate</div>
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+            <div className="text-xs font-mono text-retro-dim">← → keys · swipe to navigate</div>
             <div className="text-xs font-mono text-retro-dim" style={{ color: accent + "80" }}>
               {slideIndex + 1} of {total} · {progressPct}% complete
             </div>
