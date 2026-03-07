@@ -18,8 +18,8 @@ const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(ma
 
 const BLUE = "#3b82f6";
 const RED = "#ef4444";
-const BLUE_GLOW = "rgba(59,130,246,0.25)";
-const RED_GLOW = "rgba(239,68,68,0.25)";
+const BLUE_GLOW = "rgba(59,130,246,0.14)";
+const RED_GLOW = "rgba(239,68,68,0.14)";
 
 function withBaseUrl(src: string) {
   if (!src) return src;
@@ -42,7 +42,7 @@ function pathGlow(path: Path) {
 
 function Tick({ accent }: { accent: string }) {
   return (
-    <div className="pointer-events-none absolute inset-0 opacity-60">
+    <div className="pointer-events-none absolute inset-0 opacity-35">
       <div className="absolute left-4 top-4 h-3 w-3 border-l border-t" style={{ borderColor: accent + "60" }} />
       <div className="absolute right-4 top-4 h-3 w-3 border-r border-t" style={{ borderColor: accent + "60" }} />
       <div className="absolute left-4 bottom-4 h-3 w-3 border-l border-b" style={{ borderColor: accent + "60" }} />
@@ -213,7 +213,7 @@ function renderContent(slide: SlideData, accent: string) {
               )}
               <div className="flex items-center gap-3 mb-4">
                 <div>
-                  <div className="font-semibold text-lg">{svc.name}</div>
+                  <div className="font-semibold text-xl my-3">{svc.name}</div>
                   <div className="text-sm text-retro-dim">{svc.tagline}</div>
                 </div>
               </div>
@@ -300,7 +300,7 @@ function renderContent(slide: SlideData, accent: string) {
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
             </div>
-            <pre className="px-5 py-4 text-xs sm:text-sm font-mono leading-relaxed text-zinc-300 max-h-[400px] overflow-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-700/50">
+            <pre className="px-5 py-4 text-xs sm:text-sm font-mono leading-relaxed text-zinc-300 max-h-[400px] overflow-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
               <code>{slide.code}</code>
             </pre>
           </div>
@@ -394,7 +394,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="pointer-events-none fixed inset-0 opacity-[0.06] mix-blend-screen">
+      <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>
 
@@ -402,7 +402,8 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 text-center max-w-2xl px-6"
+        className="relative z-10 text-center max-w-2xl px-6 py-7 rounded-3xl border bg-zinc-950/90 backdrop-blur-sm"
+        style={{ borderColor: "#ffffff1f", boxShadow: "0 14px 48px rgba(0,0,0,0.45)" }}
       >
         <div className="flex items-center justify-center gap-2 mb-6">
           <Sparkles className="h-5 w-5 text-retro-glow" />
@@ -425,7 +426,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
             style={{
               borderColor: BLUE + "50",
               backgroundColor: hovered === "understand" ? BLUE + "18" : BLUE + "08",
-              boxShadow: hovered === "understand" ? `0 0 40px ${BLUE_GLOW}, inset 0 0 40px ${BLUE_GLOW}` : "none",
+              boxShadow: hovered === "understand" ? `0 10px 30px ${BLUE_GLOW}` : "none",
             }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -459,7 +460,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
             style={{
               borderColor: RED + "50",
               backgroundColor: hovered === "use" ? RED + "18" : RED + "08",
-              boxShadow: hovered === "use" ? `0 0 40px ${RED_GLOW}, inset 0 0 40px ${RED_GLOW}` : "none",
+              boxShadow: hovered === "use" ? `0 10px 30px ${RED_GLOW}` : "none",
             }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -486,7 +487,7 @@ function PillChoice({ onChoose }: { onChoose: (p: Exclude<Path, null>) => void }
 
         <div className="mt-8 flex flex-col items-center">
           <div className="relative w-full ">
-            <pre className="rounded-2xl bg-black/80 px-5 py-3 font-mono text-xs text-zinc-200 border border-retro-border overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700/50">
+            <pre className="rounded-2xl bg-zinc-950 px-5 py-3 font-mono text-xs text-zinc-200 border border-zinc-800 overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
               <code>curl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py && python3 /tmp/install.py</code>
             </pre>
             <button
@@ -684,7 +685,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-5 py-10">
-      <div className="pointer-events-none fixed inset-0 opacity-[0.06] mix-blend-screen">
+      <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>
 
@@ -704,7 +705,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
           <div className="text-xs font-mono text-retro-dim">{isNotice ? "1 / 2" : "2 / 2"}</div>
         </div>
 
-        <div className="rounded-3xl border overflow-hidden" style={{ borderColor: accent + "40", boxShadow: `0 0 60px ${glow}` }}>
+        <div className="rounded-3xl border overflow-hidden bg-zinc-950/95 backdrop-blur-sm" style={{ borderColor: accent + "40", boxShadow: `0 12px 36px rgba(0,0,0,0.45), 0 0 0 1px ${accent}20` }}>
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: accent + "25", backgroundColor: accent + "08" }}>
             <span className="text-xs font-mono text-retro-dim">BEOBSERVANT / {docTitle}</span>
             <div className="flex items-center gap-1.5">
@@ -716,7 +717,7 @@ function LegalGate({ path, onAccept, onBack }: { path: Exclude<Path, null>; onAc
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="px-6 py-5 overflow-y-auto font-mono text-xs leading-relaxed text-zinc-300 bg-retro-bg/60"
+            className="px-6 py-5 overflow-y-auto font-mono text-xs scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-600 leading-relaxed text-zinc-300 bg-retro-bg"
             style={{ maxHeight: "420px" }}
           >
             <pre className="whitespace-pre-wrap break-words">{docText}</pre>
@@ -817,13 +818,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text font-sans selection:bg-retro-glow/20">
-      <div className="pointer-events-none fixed inset-0 opacity-[0.06] mix-blend-screen">
+      <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>
 
       <div className="pointer-events-none fixed inset-0">
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full opacity-5 blur-3xl"
+          className="absolute top-0 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full opacity-[0.03] blur-3xl"
           style={{ backgroundColor: accent }}
         />
       </div>
@@ -831,7 +832,7 @@ export default function App() {
       <div className="relative mx-auto max-w-5xl px-5 py-8">
         <header className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl border flex items-center justify-center" style={{ backgroundColor: accent + "20", borderColor: accent + "40", boxShadow: `0 0 20px ${glow}` }}>
+            <div className="h-11 w-11 rounded-2xl border flex items-center justify-center" style={{ backgroundColor: accent + "15", borderColor: accent + "40", boxShadow: `0 6px 18px ${glow}` }}>
               <Sparkles className="h-5 w-5" style={{ color: accent }} />
             </div>
             <div>
@@ -862,7 +863,7 @@ export default function App() {
         </header>
 
         <main className="mt-8">
-          <div className="rounded-3xl border bg-retro-panel/70 overflow-hidden" style={{ borderColor: accent + "35", boxShadow: `0 0 60px ${glow}` }}>
+          <div className="rounded-3xl border bg-zinc-950/90 overflow-hidden backdrop-blur-sm" style={{ borderColor: accent + "35", boxShadow: `0 16px 44px rgba(0,0,0,0.48), 0 0 0 1px ${accent}16` }}>
             <div className="px-7 py-7 sm:px-10 sm:py-10 relative min-h-[520px]">
               <Tick accent={accent} />
 
@@ -875,14 +876,13 @@ export default function App() {
                   transition={{ duration: 0.22 }}
                 >
                   {s?.kicker && (
-                    <div className="text-xs font-mono uppercase tracking-[0.22em]" style={{ color: accent + "cc" }}>
+                    <div className="text-sm font-mono font-bold uppercase tracking-[0.18em]" style={{ color: accent }}>
                       <span style={{ color: accent }}>{">"}</span> {s.kicker}
                     </div>
                   )}
 
                   <h1 className="mt-3 text-3xl sm:text-4xl font-bold tracking-tight max-w-3xl">
                     {s?.title}
-                    <span className="ml-2 inline-block h-[0.9em] w-[0.45em] translate-y-[0.08em] align-middle animate-pulse" style={{ backgroundColor: accent + "bb" }} />
                   </h1>
 
                   {s?.subtitle && (
@@ -901,7 +901,7 @@ export default function App() {
               </AnimatePresence>
             </div>
 
-            <div className="border-t px-6 py-4 sm:px-10 flex items-center justify-between gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
+            <div className=" px-6 py-4 sm:px-10 flex items-center justify-between gap-3" style={{ borderColor: accent + "25", backgroundColor: accent + "05" }}>
               <button
                 className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-mono transition disabled:opacity-30"
                 style={{ borderColor: canPrev ? accent + "50" : "transparent", color: canPrev ? accent : undefined }}

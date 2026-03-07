@@ -173,7 +173,7 @@
     },
     {
       "kicker": "Stack Comparison",
-      "title": "The logical choice isn't even close.",
+      "title": "What's the Goal?",
       "type": "table",
       "table": {
         "columns": ["Feature", "Grafana OSS", "Grafana Enterprise", "Be Observant"],
@@ -192,10 +192,11 @@
     },
     {
       "kicker": "Developer Experience",
-      "title": "The End Goal of Productionizing",
+      "title": "Production Goal: Secure, Operable Observability for Real Teams",
+      "subtitle": "Goal: make production observability secure by default, easy to operate, and fast to investigate. We are currently in Beta, and we want to build this into a production-grade platform with your feedback and help.",
       "type": "code",
-      "codeLabel": "Deploy the full stack with the control plane",
-      "code": "# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py\npython3 /tmp/install.py\n\n# Your stack is now protected by:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n  -H \"Authorization: Bearer ${YOUR_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"service\": \"api-gateway\", \"lookback_minutes\": 60}'",
+      "codeLabel": "Beta today -> production-grade tomorrow (with your help)",
+      "code": "# End goal: deploy the full stack with a secure control plane\n# Current status: Beta (actively evolving based on user feedback)\n\n# Spin up Be Observant + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/beobservant/main/install.py -o /tmp/install.py\npython3 /tmp/install.py\n\n# What we're trying to achieve in production:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n# Help shape this Beta:\n#   Report issues, request features, and share production requirements.",
       "links": [
         {
           "label": "Read Deployment Guide",

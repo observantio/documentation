@@ -14,10 +14,21 @@ html {
 
 body {
   margin: 0;
-  background: #0a0a0a;
+  background: #0b0e14;
   color: #e6e6e6;
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
+    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05), transparent 42%),
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: auto, 40px 40px, 40px 40px;
+  background-attachment: fixed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(148, 163, 184, 0.28);
+  color: #f8fafc;
 }
