@@ -112,13 +112,13 @@
       ]
     },
     {
-      "kicker": "AIOps — BeCertain",
+      "kicker": "AIOps — Be Certain",
       "title": "Root cause analysis that doesn't ask you to guess.",
       "type": "services",
       "services": [
         {
-          "name": "BeCertain",
-          "image": { "src": "/becertain.png", "alt": "BeCertain diagram" },
+          "name": "Be Certain",
+          "image": { "src": "/becertain.png", "alt": "Be Certain diagram" },
           "tagline": "An autonomous RCA engine that ranks hypotheses with evidence links—not a dashboard you still have to read.",
           "bullets": [
             "Asynchronous RCA jobs analyze anomaly groups, topology blast radius, and causal chains across all three data planes.",
@@ -132,12 +132,12 @@
       ]
     },
     {
-      "kicker": "Alert Intelligence — BeNotified",
+      "kicker": "Alert Intelligence — Be Notified",
       "title": "Alertmanager with a brain and an incident board.",
       "type": "services",
       "services": [
         {
-          "name": "BeNotified",
+          "name": "Be Notified",
           "tagline": "Built on Alertmanager, BeNotified handles complex routing, Slack/Jira syncing, and collaborative incident management—ensuring the right team gets the right context at the right time.",
           "image": { "src": "/benotified.png", "alt": "BeNotified diagram" },
           "bullets": [

@@ -224,7 +224,7 @@
     "bullets": [
       "Use the README for architecture, stack purpose, service roles, and quick-start mental model.",
       "Use USER_GUIDE for prerequisites, deployment, UI page guidance, alerting setup, RCA setup, auth modes, hardening, and common problems.",
-      "Use docker-compose.yml, .env.example, and service main/router/config files when you need exact implementation truth rather than narrative guidance."
+      "Use docker-compose.yml, .env.example, and service main/router/config files when you need exact implementation."
     ],
     "links": [
       {
