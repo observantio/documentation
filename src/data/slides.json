@@ -80,7 +80,7 @@
         {
           "name": "Gatekeeper Gateway",
           "tagline": "The front door to your telemetry. Nothing gets in without a valid token.",
-          "image": { "src": "/oltp.png", "alt": "OTLP Gateway diagram" },
+          "image": { "src": "/otlp.png", "alt": "OTLP Gateway diagram" },
           "bullets": [
             "Envoy-based OTLP gateway supports rate limiting, token validation, and request transformation at scale.",
             "Gatekeeper validates every incoming request by checking against Watchdog's DB, with token caching for performance.",
