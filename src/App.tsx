@@ -768,9 +768,9 @@ function PillChoice({
           LGTM stack management for self-hosted teams, made possible for free
         </h1>
         <p className="mb-6 max-w-3xl text-sm leading-relaxed text-retro-dim sm:text-base">
-          Start the stack, open the docs, or jump into the part you need. This
-          home screen is now focused on quick setup and product orientation
-          instead of presentation chrome.
+          Our vision is to make the LGTM stack secure, usable, and affordable
+          for self-hosted teams by putting access control, guided operations,
+          and day-to-day workflows in one place.
         </p>
 
         <div className="order-1">
