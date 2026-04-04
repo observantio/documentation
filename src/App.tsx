@@ -9,10 +9,12 @@ import {
   Sparkles,
   Terminal,
   Copy,
+  Moon,
 } from "lucide-react";
 
 import { slidesJson } from "./data/slideData";
 import type { Path, SlideData } from "./data/slideTypes";
+import sunIcon from "./assets/sun.png";
 
 const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
@@ -97,6 +99,40 @@ function pathGlow(path: Path) {
   if (path === "use") return RED_GLOW;
   if (path === "docs") return DOCS_GLOW;
   return "rgba(0,255,170,0.18)";
+}
+
+type ThemeMode = "dark" | "light";
+
+function ThemeToggleButton({
+  theme,
+  onToggle,
+}: {
+  theme: ThemeMode;
+  onToggle: () => void;
+}) {
+  const goingToLight = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={`Switch to ${goingToLight ? "light" : "dark"} mode`}
+      title={`Switch to ${goingToLight ? "light" : "dark"} mode`}
+      className="fixed top-4 right-4 z-50 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-mono transition min-h-10"
+      style={{
+        borderColor: goingToLight ? BLUE + "55" : "#54657d",
+        backgroundColor: goingToLight ? BLUE + "12" : "#f8fafcde",
+        color: goingToLight ? BLUE : "#0f172a",
+        boxShadow: "0 10px 30px rgba(2, 8, 23, 0.2)",
+      }}
+    >
+      {goingToLight ? (
+        <img src={sunIcon} alt="" className="h-4 w-4 object-contain" />
+      ) : (
+        <Moon className="h-4 w-4" />
+      )}
+      <span>{goingToLight ? "Light mode" : "Dark mode"}</span>
+    </button>
+  );
 }
 
 function Tick({ accent }: { accent: string }) {
@@ -1321,9 +1357,26 @@ function LegalGate({
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "dark";
+    const saved = window.localStorage.getItem("showcase-theme");
+    if (saved === "dark" || saved === "light") return saved;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
   const [path, setPath] = useState<Path>(null);
   const [legalDone, setLegalDone] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.setAttribute("data-theme", theme);
+    window.localStorage.setItem("showcase-theme", theme);
+  }, [theme]);
 
   const slides = useMemo(() => {
     if (path === "understand") return slidesJson.understand;
@@ -1426,14 +1479,23 @@ export default function App() {
     swipeLockedToScroll.current = false;
   };
 
-  if (!path) return <PillChoice onChoose={choosePath} />;
+  if (!path)
+    return (
+      <>
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+        <PillChoice onChoose={choosePath} />
+      </>
+    );
   if (!legalDone)
     return (
-      <LegalGate
-        path={path}
-        onAccept={() => setLegalDone(true)}
-        onBack={() => setPath(null)}
-      />
+      <>
+        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+        <LegalGate
+          path={path}
+          onAccept={() => setLegalDone(true)}
+          onBack={() => setPath(null)}
+        />
+      </>
     );
 
   const progressPct = total ? Math.round(((slideIndex + 1) / total) * 100) : 0;
@@ -1446,6 +1508,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text font-sans selection:bg-retro-glow/20">
+      <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
       <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
         <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
       </div>

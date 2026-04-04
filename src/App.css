@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+:root[data-theme="dark"] {
+  --showcase-bg-rgb: 11 14 20;
+  --showcase-bg-alt-rgb: 16 22 31;
+  --showcase-panel-rgb: 20 25 35;
+  --showcase-text: #e6e6e6;
+  --showcase-muted: #a1a1aa;
+  --showcase-border: rgba(255, 255, 255, 0.16);
+  --showcase-glow: #7dd3fc;
+}
+
+:root[data-theme="light"] {
+  --showcase-bg-rgb: 242 246 252;
+  --showcase-bg-alt-rgb: 226 237 248;
+  --showcase-panel-rgb: 255 255 255;
+  --showcase-text: #0f172a;
+  --showcase-muted: #475569;
+  --showcase-border: rgba(15, 23, 42, 0.18);
+  --showcase-glow: #0284c7;
+}
+
 html,
 body,
 #root {
@@ -14,14 +35,19 @@ html {
 
 body {
   margin: 0;
-  background: #0b0e14;
-  color: #e6e6e6;
+  background: rgb(var(--showcase-bg-rgb));
+  color: var(--showcase-text);
   background-image:
-    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05), transparent 42%),
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    radial-gradient(
+      circle at 50% -20%,
+      rgb(var(--showcase-bg-alt-rgb) / 0.62),
+      transparent 42%
+    ),
+    linear-gradient(rgb(148 163 184 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.1) 1px, transparent 1px);
   background-size: auto, 40px 40px, 40px 40px;
   background-attachment: fixed;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 * {
@@ -29,6 +55,73 @@ body {
 }
 
 ::selection {
-  background: rgba(148, 163, 184, 0.28);
-  color: #f8fafc;
+  background: rgb(148 163 184 / 0.28);
+  color: rgb(248 250 252);
+}
+
+.bg-retro-bg {
+  background-color: rgb(var(--showcase-bg-rgb));
+}
+
+.bg-retro-bg\/40 {
+  background-color: rgb(var(--showcase-bg-rgb) / 0.4);
+}
+
+.bg-retro-bg\/60 {
+  background-color: rgb(var(--showcase-bg-rgb) / 0.6);
+}
+
+.bg-retro-bg\/70 {
+  background-color: rgb(var(--showcase-bg-rgb) / 0.7);
+}
+
+.bg-retro-bg\/80 {
+  background-color: rgb(var(--showcase-bg-rgb) / 0.8);
+}
+
+.bg-retro-panel {
+  background-color: rgb(var(--showcase-panel-rgb) / 0.7);
+}
+
+.text-retro-text {
+  color: var(--showcase-text);
+}
+
+.text-retro-dim {
+  color: var(--showcase-muted);
+}
+
+.text-retro-glow {
+  color: var(--showcase-glow);
+}
+
+.border-retro-border {
+  border-color: var(--showcase-border);
+}
+
+:root[data-theme="light"] .bg-zinc-950\/90,
+:root[data-theme="light"] .bg-zinc-950\/95,
+:root[data-theme="light"] .bg-zinc-950\/70 {
+  background-color: rgb(255 255 255 / 0.9) !important;
+}
+
+:root[data-theme="light"] .border-zinc-800,
+:root[data-theme="light"] .border-zinc-700 {
+  border-color: rgb(148 163 184 / 0.45) !important;
+}
+
+:root[data-theme="light"] .text-zinc-100,
+:root[data-theme="light"] .text-zinc-100\/90,
+:root[data-theme="light"] .text-zinc-200,
+:root[data-theme="light"] .text-zinc-300,
+:root[data-theme="light"] .text-zinc-300\/90,
+:root[data-theme="light"] .text-zinc-400,
+:root[data-theme="light"] .text-zinc-500,
+:root[data-theme="light"] .text-zinc-600 {
+  color: #334155 !important;
+}
+
+:root[data-theme="light"] .bg-black\/30,
+:root[data-theme="light"] .bg-black\/40 {
+  background-color: rgb(241 245 249 / 0.8) !important;
 }
