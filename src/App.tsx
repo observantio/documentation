@@ -57,11 +57,13 @@ const INSTALL_TABS: Array<{ key: InstallerTab; label: string }> = [
 ];
 const INSTALL_COMMANDS: Record<InstallerTab, string> = {
   stack: `curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh
-bash download.sh
 
 # Optional explicit release + architecture:
-bash download.sh ${STACK_RELEASE_TAG} arm64
-# Supported arch values: amd64 | arm64 | multi`,
+# bash download.sh ${STACK_RELEASE_TAG} arm64 
+# bash download.sh ${STACK_RELEASE_TAG} amd64
+# Supported arch values: amd64 | arm64 | multi
+
+bash download.sh ${STACK_RELEASE_TAG}`,
   linux: `curl -L https://github.com/observantio/ojo/releases/download/${OJO_RELEASE_TAG}/ojo-${OJO_RELEASE_TAG}-linux-x86_64 -o ojo
 chmod +x ojo
 sudo mv ojo /usr/local/bin/ojo
