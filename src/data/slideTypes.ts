@@ -1,4 +1,4 @@
-export type Path = "understand" | "use" | "docs" | null;
+export type Path = "understand" | "use" | null;
 
 export type SlideType =
   | "bullets"
@@ -45,7 +45,7 @@ export interface SlideData {
 
   comparison?: { feature: string; us: string | boolean; datadog: string | boolean; grafana: string | boolean }[];
 
-  code?: string;
+  code?: string | Array<{ label?: string; code: string }>;
   codeLabel?: string;
 
   workflowSteps?: { label: string; detail: string }[];
@@ -69,5 +69,4 @@ export interface SlideData {
 export interface SlidesJson {
   understand: SlideData[];
   use: SlideData[];
-  docs: SlideData[];
 }

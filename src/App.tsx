@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  Brain,
   CheckCircle2,
   Container,
   FileText,
@@ -11,6 +12,7 @@ import {
   Github,
   Lock,
   Monitor,
+  Rocket,
   Sparkles,
   Terminal,
   Copy,
@@ -20,17 +22,19 @@ import {
 import { slidesJson } from "./data/slideData";
 import type { Path, SlideData } from "./data/slideTypes";
 import sunIcon from "./assets/sun.png";
+import { BUILD_TIMESTAMP } from "./buildInfo";
 
 const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
 
 const BLUE = "#3b82f6";
 const RED = "#ef4444";
-const DOCS = "#14b8a6";
 const BLUE_GLOW = "rgba(59,130,246,0.14)";
 const RED_GLOW = "rgba(239,68,68,0.14)";
-const DOCS_GLOW = "rgba(20,184,166,0.18)";
 
+const WATCHDOG_README_URL =
+  "https://github.com/observantio/watchdog/blob/main/README.md";
+const OJO_README_URL = "https://github.com/observantio/ojo/blob/main/README.md";
 const DOC_LINKS = [
   {
     label: "Full User Guide",
@@ -38,42 +42,93 @@ const DOC_LINKS = [
   },
   {
     label: "Architecture README",
-    href: "https://github.com/observantio/watchdog/blob/main/README.md",
+    href: WATCHDOG_README_URL,
   },
 ];
 const WATCHDOG_DEPLOYMENT_GUIDE_URL =
   "https://github.com/observantio/watchdog/blob/main/DEPLOYMENT.md";
 const OJO_DEPLOYMENT_GUIDE_URL =
   "https://github.com/observantio/ojo/blob/main/DEPLOYMENT.md";
-const STACK_RELEASE_TAG = "v0.0.2";
-const WATCHDOG_RELEASE_URL = `https://github.com/observantio/watchdog/releases/tag/${STACK_RELEASE_TAG}`;
-const OJO_RELEASE_TAG = "v0.0.2";
-const OJO_RELEASE_URL = `https://github.com/observantio/ojo/releases/tag/${OJO_RELEASE_TAG}`;
+const DEFAULT_STACK_RELEASE_TAG = "v0.0.3";
+const DEFAULT_OJO_RELEASE_TAG = "v0.0.3";
 type InstallerTab = "stack" | "linux" | "windows";
 const INSTALL_TABS: Array<{ key: InstallerTab; label: string }> = [
-  { key: "stack", label: `Stack ${STACK_RELEASE_TAG}` },
-  { key: "linux", label: `Ojo Linux ${OJO_RELEASE_TAG}` },
-  { key: "windows", label: `Ojo Windows ${OJO_RELEASE_TAG}` },
+  { key: "stack", label: "Stack" },
+  { key: "linux", label: "Ojo Linux" },
+  { key: "windows", label: "Ojo Windows" },
 ];
-const INSTALL_COMMANDS: Record<InstallerTab, string> = {
-  stack: `curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh
+function fetchLatestGitHubReleaseTag(
+  owner: string,
+  repo: string,
+  fallback: string,
+): Promise<string> {
+  return fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`)
+    .then((res) => {
+      if (!res.ok) return fallback;
+      return res.json();
+    })
+    .then((data) => {
+      if (!data || typeof data.tag_name !== "string") return fallback;
+      return data.tag_name;
+    })
+    .catch(() => fallback);
+}
+function getInstallCommand(
+  tab: InstallerTab,
+  stackReleaseTag: string,
+  ojoReleaseTag: string,
+) {
+  const commands: Record<InstallerTab, string> = {
+    stack: `curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh
 
 # Optional explicit release + architecture:
-# bash download.sh ${STACK_RELEASE_TAG} arm64 
-# bash download.sh ${STACK_RELEASE_TAG} amd64
+# bash download.sh ${stackReleaseTag} arm64 
+# bash download.sh ${stackReleaseTag} amd64
 # Supported arch values: amd64 | arm64 | multi
 
-bash download.sh ${STACK_RELEASE_TAG}`,
-  linux: `curl -L https://github.com/observantio/ojo/releases/download/${OJO_RELEASE_TAG}/ojo-${OJO_RELEASE_TAG}-linux-x86_64 -o ojo
+bash download.sh ${stackReleaseTag}`,
+    linux: `curl -L https://github.com/observantio/ojo/releases/download/${ojoReleaseTag}/ojo-${ojoReleaseTag}-linux-x86_64 -o ojo
 chmod +x ojo
 sudo mv ojo /usr/local/bin/ojo
 ojo --config linux.yaml`,
-  windows: `Invoke-WebRequest https://github.com/observantio/ojo/releases/download/${OJO_RELEASE_TAG}/ojo-${OJO_RELEASE_TAG}-windows-x86_64.exe -OutFile .\\ojo.exe
+    windows: `Invoke-WebRequest https://github.com/observantio/ojo/releases/download/${ojoReleaseTag}/ojo-${ojoReleaseTag}-windows-x86_64.exe -OutFile .\\ojo.exe
 .\\ojo.exe --config windows.yaml`,
-};
+  };
+  return commands[tab];
+}
+function getReleaseUrl(
+  isStackTab: boolean,
+  stackReleaseTag: string,
+  ojoReleaseTag: string,
+) {
+  return isStackTab
+    ? `https://github.com/observantio/watchdog/releases/tag/${stackReleaseTag}`
+    : `https://github.com/observantio/ojo/releases/tag/${ojoReleaseTag}`;
+}
+
+function LinuxPenguinIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2.5c-2.6 0-4.7 2.1-4.7 4.7v2.1c0 1.5-1 2.8-2.4 3.1 0 0 1.4 2.8 1.4 4.7 0 1.5 1.3 2.7 2.8 2.7h4.9c1.5 0 2.8-1.2 2.8-2.7 0-1.9 1.4-4.7 1.4-4.7-1.4-.3-2.4-1.6-2.4-3.1V7.2C16.7 4.6 14.6 2.5 12 2.5Z" />
+      <path d="M9.5 9.5c.3.6.6 1.3.6 2.2 0 1.7-1 2.9-1 2.9s.6 1.8 1.3 2.4" />
+      <path d="M14.5 9.5c-.3.6-.6 1.3-.6 2.2 0 1.7 1 2.9 1 2.9s-.6 1.8-1.3 2.4" />
+      <path d="M10.7 14.7c.8 1.2 2.6 1.2 3.4 0" />
+      <path d="M11.6 9.3a.9.9 0 1 1-1.8 0 .9.9 0 0 1 1.8 0Z" />
+    </svg>
+  );
+}
 
 function installerTabIcon(tab: InstallerTab) {
   if (tab === "windows") return <Monitor className="h-4 w-4" />;
+  if (tab === "linux") return <LinuxPenguinIcon />;
   return <Container className="h-4 w-4" />;
 }
 
@@ -103,13 +158,11 @@ function findHorizontalScrollContainer(
 function pathAccent(path: Path) {
   if (path === "understand") return BLUE;
   if (path === "use") return RED;
-  if (path === "docs") return DOCS;
   return "#00ffaa";
 }
 function pathGlow(path: Path) {
   if (path === "understand") return BLUE_GLOW;
   if (path === "use") return RED_GLOW;
-  if (path === "docs") return DOCS_GLOW;
   return "rgba(0,255,170,0.18)";
 }
 
@@ -132,7 +185,7 @@ function ThemeToggleButton({
       className="fixed top-4 right-4 z-50 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-mono transition min-h-10"
       style={{
         borderColor: goingToLight ? BLUE + "55" : "#54657d",
-        backgroundColor: goingToLight ? BLUE + "12" : "#f8fafcde",
+        backgroundColor: goingToLight ? BLUE + "24" : "#f8fafcde",
         color: goingToLight ? "#f3f7ff" : "#0f172a",
         boxShadow: "0 10px 30px rgba(2, 8, 23, 0.2)",
       }}
@@ -210,6 +263,65 @@ function IdeCodeBlock({ code }: { code: string }) {
             ))}
           </code>
         </pre>
+      </div>
+    </div>
+  );
+}
+
+function CodeBlockSection({
+  block,
+  accent,
+}: {
+  block: { label?: string; code: string };
+  accent: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(block.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        {block.label ? (
+          <div className="text-xs font-mono uppercase tracking-[0.18em] text-retro-dim">
+            {block.label}
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-mono text-retro-dim transition hover:border-current hover:text-retro-text"
+          style={{ borderColor: accent + "35" }}
+        >
+          <Copy className="h-3.5 w-3.5" />
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <div
+        className="showcase-code-panel rounded-2xl border overflow-auto"
+        style={{ borderColor: accent + "35" }}
+      >
+        <div
+          className="flex items-center gap-1.5 px-4 py-3 border-b"
+          style={{ borderColor: accent + "25" }}
+        >
+          <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+          <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
+          <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
+        </div>
+        <div className="showcase-code px-5 py-4 text-xs sm:text-sm font-mono leading-relaxed text-zinc-300 max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
+          <code className="whitespace-pre">
+            {block.code.split("\n").map((line, lineIndex) => (
+              <div key={`${lineIndex}-${line}`}>
+                {renderCommandLine(line)}
+              </div>
+            ))}
+          </code>
+        </div>
       </div>
     </div>
   );
@@ -603,9 +715,15 @@ function renderContent(slide: SlideData, accent: string) {
         </div>
       );
 
-    case "code":
+    case "code": {
+      const codeBlocks = Array.isArray(slide.code)
+        ? slide.code
+        : slide.code
+          ? [{ code: slide.code }]
+          : [];
+
       return (
-        <div className="mt-6">
+        <div className="mt-6 space-y-4">
           {slide.codeLabel && (
             <div className="mb-2 flex items-center gap-2">
               <Terminal className="h-3.5 w-3.5 text-retro-dim" />
@@ -614,24 +732,14 @@ function renderContent(slide: SlideData, accent: string) {
               </span>
             </div>
           )}
-          <div
-            className="showcase-code-panel rounded-2xl border overflow-auto"
-            style={{ borderColor: accent + "35" }}
-          >
-            <div
-              className="flex items-center gap-1.5 px-4 py-3 border-b"
-              style={{ borderColor: accent + "25" }}
-            >
-              <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-              <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
+          {codeBlocks.map((block, index) => (
+            <div key={index} className={index > 0 ? "mt-4" : ""}>
+              <CodeBlockSection block={block} accent={accent} />
             </div>
-            <pre className="showcase-code px-5 py-4 text-xs sm:text-sm font-mono leading-relaxed text-zinc-300 max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
-              <code className="whitespace-pre">{slide.code}</code>
-            </pre>
-          </div>
+          ))}
         </div>
       );
+    }
 
     case "workflow":
       return (
@@ -764,18 +872,62 @@ function renderContent(slide: SlideData, accent: string) {
 
 function PillChoice({
   onChoose,
+  theme,
 }: {
   onChoose: (p: Exclude<Path, null>) => void;
+  theme: ThemeMode;
 }) {
   const [hovered, setHovered] = useState<Path>(null);
   const [activeInstallTab, setActiveInstallTab] =
     useState<InstallerTab>("stack");
+  const [stackReleaseTag, setStackReleaseTag] =
+    useState<string>(DEFAULT_STACK_RELEASE_TAG);
+  const [ojoReleaseTag, setOjoReleaseTag] = useState<string>(
+    DEFAULT_OJO_RELEASE_TAG,
+  );
   const [copied, setCopied] = useState(false);
-  const activeInstallCommand = INSTALL_COMMANDS[activeInstallTab];
+  const activeInstallCommand = getInstallCommand(
+    activeInstallTab,
+    stackReleaseTag,
+    ojoReleaseTag,
+  );
   const isStackTab = activeInstallTab === "stack";
   const deploymentGuideUrl = isStackTab
     ? WATCHDOG_DEPLOYMENT_GUIDE_URL
     : OJO_DEPLOYMENT_GUIDE_URL;
+  const releaseUrl = getReleaseUrl(isStackTab, stackReleaseTag, ojoReleaseTag);
+
+  const docsLinkItems = isStackTab
+    ? DOC_LINKS
+    : [{ label: "README", href: OJO_README_URL }];
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLatest() {
+      const [watchdogTag, ojoTag] = await Promise.all([
+        fetchLatestGitHubReleaseTag(
+          "observantio",
+          "watchdog",
+          DEFAULT_STACK_RELEASE_TAG,
+        ),
+        fetchLatestGitHubReleaseTag(
+          "observantio",
+          "ojo",
+          DEFAULT_OJO_RELEASE_TAG,
+        ),
+      ]);
+
+      if (!active) return;
+      setStackReleaseTag(watchdogTag);
+      setOjoReleaseTag(ojoTag);
+    }
+
+    loadLatest();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeInstallCommand);
@@ -793,7 +945,7 @@ function PillChoice({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 flex w-full max-w-5xl flex-col text-left"
+        className="relative z-10 flex w-full max-w-6xl flex-col text-left"
       >
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-retro-glow" />
@@ -802,14 +954,40 @@ function PillChoice({
           </span>
         </div>
 
-        <h1 className="mb-3 max-w-5xl text-2xl font-bold tracking-tight sm:text-4xl">
-          LGTM stack management for self-hosted teams, made possible for free
-        </h1>
-        <p className="mb-6 max-w-3xl text-sm leading-relaxed text-retro-dim sm:text-base">
+        <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
+          <div className="h-20 w-20 rounded-full border-2 border-zinc-700 bg-zinc-950 p-2">
+            <img
+              src={withBaseUrl("/wolf.png")}
+              alt="Observantio logo"
+              className="h-full w-full rounded-full"
+            />
+          </div>
+          <h1 className="max-w-5xl text-2xl font-bold tracking-tight sm:text-4xl">
+            LGTM stack management for self-hosted teams, made possible for free
+          </h1>
+        </div>
+        <p className="mb-6 max-w-4xl text-sm leading-relaxed text-retro-dim sm:text-base">
           Our vision is to make the LGTM stack secure, usable, and affordable
           for self-hosted teams by putting access control, guided operations,
           and day-to-day workflows in one place.
         </p>
+        <div className="mb-6 text-sm text-retro-text">
+          <a
+            href="https://www.linkedin.com/in/stefan-kumarasinghe"
+            target="_blank"
+            rel="noreferrer"
+            className={
+              theme === "dark"
+                ? "text-sky-300 hover:text-sky-200 transition-colors"
+                : "text-blue-800 hover:text-blue-700 transition-colors"
+            }
+          >
+            Stefan Kumarasinghe on LinkedIn
+          </a>
+          <span className="ml-3 text-xs text-zinc-400">
+            updated at {BUILD_TIMESTAMP}
+          </span>
+        </div>
 
         <div className="order-1">
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -821,13 +999,6 @@ function PillChoice({
                 Choose an install target and copy the command.
               </div>
             </div>
-            <button
-              onClick={() => onChoose("docs")}
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-xs transition showcase-link-inline"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Product docs
-            </button>
           </div>
 
           <div className="showcase-home-tabs mb-3 grid w-full grid-cols-1 gap-2 rounded-xl p-1 sm:grid-cols-3">
@@ -851,7 +1022,13 @@ function PillChoice({
                     <span className="showcase-home-tab-icon">
                       {installerTabIcon(tab.key)}
                     </span>
-                    <span>{tab.label}</span>
+                    <span>
+                      {tab.key === "stack"
+                        ? `Stack ${stackReleaseTag}`
+                        : tab.key === "linux"
+                        ? `Ojo Linux ${ojoReleaseTag}`
+                        : `Ojo Windows ${ojoReleaseTag}`}
+                    </span>
                   </span>
                 </button>
               );
@@ -882,34 +1059,34 @@ function PillChoice({
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-retro-dim">
             <span>
               {isStackTab
-                ? `Stack install is intended for Linux hosts, preferably Ubuntu or Amazon Linux. Recommended arch values: amd64 | arm64 | multi`
-                : `Use the latest Ojo ${OJO_RELEASE_TAG} binary for your host.`}
+                ? `Stack install is intended for Linux hosts, preferably Ubuntu or Amazon Linux.`
+                : `Use the latest Ojo ${ojoReleaseTag} binary for your host.`}
             </span>
             <a
               href={deploymentGuideUrl}
               target="_blank"
               rel="noreferrer"
-              className="showcase-link-inline inline-flex items-center gap-1.5 transition"
+              className="showcase-link-inline inline-flex items-center gap-1.5 transition underline decoration-dotted decoration-current underline-offset-2"
             >
               <FileText className="h-3.5 w-3.5" />
               Deployment guide
             </a>
             <a
-              href={isStackTab ? WATCHDOG_RELEASE_URL : OJO_RELEASE_URL}
+              href={releaseUrl}
               target="_blank"
               rel="noreferrer"
-              className="showcase-link-inline inline-flex items-center gap-1.5 transition"
+              className="showcase-link-inline inline-flex items-center gap-1.5 transition underline decoration-dotted decoration-current underline-offset-2"
             >
               <FileText className="h-3.5 w-3.5" />
               Release
             </a>
-            {DOC_LINKS.map((item) => (
+            {docsLinkItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                className="showcase-link-inline inline-flex items-center gap-1.5 transition"
+                className="showcase-link-inline inline-flex items-center gap-1.5 transition underline decoration-dotted decoration-current underline-offset-2"
               >
                 <FileText className="h-3.5 w-3.5" />
                 {item.label}
@@ -932,14 +1109,14 @@ function PillChoice({
             />
             <div className="mb-3 flex items-center gap-3">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl border text-xl"
+                className="flex h-12 w-12 items-center justify-center rounded-xl border"
                 style={{
                   opacity: hovered === "understand" ? 1 : 0.85,
                   borderColor: BLUE + "33",
                   backgroundColor: BLUE + "12",
                 }}
               >
-                🧠
+                <Brain className="h-6 w-6" style={{ color: BLUE }} />
               </div>
               <div>
                 <div className="font-bold text-xl" style={{ color: BLUE }}>
@@ -976,14 +1153,14 @@ function PillChoice({
             />
             <div className="mb-3 flex items-center gap-3">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl border text-xl"
+                className="flex h-12 w-12 items-center justify-center rounded-xl border"
                 style={{
                   opacity: hovered === "use" ? 1 : 0.85,
                   borderColor: RED + "33",
                   backgroundColor: RED + "10",
                 }}
               >
-                🚀
+                <Rocket className="h-6 w-6" style={{ color: RED }} />
               </div>
               <div>
                 <div className="font-bold text-xl" style={{ color: RED }}>
@@ -1243,9 +1420,7 @@ function LegalGate({
     if (isNotice) setStep("license");
     else onAccept();
   };
-  const legalBlocks = isNotice
-    ? docText.split("\n").map((line) => ({ type: "paragraph" as const, text: line }))
-    : normalizeLegalText(docText);
+  const legalBlocks = normalizeLegalText(docText);
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 py-8 sm:px-5 sm:py-10">
@@ -1299,7 +1474,7 @@ function LegalGate({
             onScroll={handleScroll}
             className="legal-page px-0 py-5 font-mono text-xs leading-relaxed text-zinc-300"
           >
-            <div className={`legal-doc break-words ${isNotice ? "whitespace-pre-wrap" : ""}`}>
+            <div className="legal-doc break-words">
               {legalBlocks.map((block, idx) => {
                 const isDivider = block.type === "divider";
                 const isHeading = block.type === "heading";
@@ -1310,9 +1485,7 @@ function LegalGate({
                       ? "my-4"
                       : block.type === "heading"
                         ? "mt-5 mb-2"
-                        : isNotice
-                          ? "mb-0"
-                          : "mb-3 leading-7";
+                        : "mb-3 leading-7";
                 return (
                   <div
                     key={`${idx}-${block.type}-${block.text}`}
@@ -1401,7 +1574,6 @@ export default function App() {
   const slides = useMemo(() => {
     if (path === "understand") return slidesJson.understand;
     if (path === "use") return slidesJson.use;
-    if (path === "docs") return slidesJson.docs;
     return [];
   }, [path]);
 
@@ -1422,10 +1594,6 @@ export default function App() {
   const total = slides.length;
   const s = slides[slideIndex];
   const currentSection = s?.section ?? "Pitch";
-  const currentSectionIndex = Math.max(
-    0,
-    sectionEntries.findIndex((entry) => entry.label === currentSection),
-  );
 
   const accent = pathAccent(path);
   const glow = pathGlow(path);
@@ -1503,7 +1671,7 @@ export default function App() {
     return (
       <>
         <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
-        <PillChoice onChoose={choosePath} />
+        <PillChoice onChoose={choosePath} theme={theme} />
       </>
     );
   if (!legalDone)
@@ -1544,14 +1712,18 @@ export default function App() {
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div
-              className="h-11 w-11 rounded-2xl border flex items-center justify-center"
+              className="h-11 w-11 rounded-2xl border flex items-center justify-center overflow-hidden"
               style={{
                 backgroundColor: accent + "15",
                 borderColor: accent + "40",
                 boxShadow: `0 6px 18px ${glow}`,
               }}
             >
-              <Sparkles className="h-5 w-5" style={{ color: accent }} />
+              <img
+                src={withBaseUrl("/wolf.png")}
+                alt="Watchdog favicon"
+                className="h-7 w-7"
+              />
             </div>
             <div>
               <div className="text-xs font-mono uppercase tracking-wider text-retro-dim">
@@ -1635,15 +1807,6 @@ export default function App() {
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.22 }}
                 >
-                  <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-retro-dim">
-                    <span>
-                      Section {currentSectionIndex + 1} /{" "}
-                      {sectionEntries.length || 1}
-                    </span>
-                    <span className="text-zinc-600">|</span>
-                    <span style={{ color: accent }}>{currentSection}</span>
-                  </div>
-
                   {s?.kicker && (
                     <div
                       className="text-sm font-mono font-bold uppercase tracking-[0.18em]"

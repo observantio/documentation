@@ -196,7 +196,7 @@
       "subtitle": "Goal: make production observability secure by default, easy to operate, and fast to investigate. We are currently in Beta, and we want to build this into a production-grade platform with your feedback and help.",
       "type": "code",
       "codeLabel": "Beta today -> production-grade tomorrow (with your help)",
-      "code": "# End goal: deploy the full stack with a secure control plane\n# Current status: Beta (actively evolving based on user feedback)\n\n# Spin up Watchdog + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nbash download.sh\n\n# Optional: pin a release and architecture\n# bash download.sh v0.0.2 arm64\n\n# What we're trying to achieve in production:\n#   JWT asymmetric signing (RS256/ES256)\n#   Keycloak OIDC with MFA enforcement\n#   Rate-limited, token-validated OTLP gateway\n#   RBAC-enforced Grafana proxy (NGINX)\n\n# Trigger an AI RCA job via the control plane:\ncurl -X POST http://localhost:4319/api/rca/jobs \\\n# Help shape this Beta:\n#   Report issues, request features, and share production requirements.",
+      "code": "# End goal: deploy the full stack with a secure control plane\n# Current status: Beta (actively evolving based on user feedback)\n\n# Spin up Watchdog + the full LGTM stack\ncurl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nbash download.sh",
       "links": [
         {
           "label": "Read Deployment Guide",
@@ -237,7 +237,16 @@
       "title": "Up and running in under 5 minutes.",
       "type": "code",
       "codeLabel": "Two ways to start — pick one",
-      "code": "# Option A: curl downloader (quickest)\n# Uses the latest release by default and validates docker access first\ncurl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nbash download.sh\n\n# Optional: pin a specific release and architecture\n# bash download.sh v0.0.2 amd64\n# bash download.sh v0.0.2 arm64\n\n# Option B: inspect the script first, then run it\ncurl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nsed -n '1,220p' download.sh\nbash download.sh"
+      "code": [
+        {
+          "label": "# Option A: curl downloader (quickest)",
+          "code": "# Uses the latest release by default and validates docker access first\ncurl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nbash download.sh\n\n# Optional: pin a specific release and architecture\n# bash download.sh v0.0.2 amd64\n# bash download.sh v0.0.2 arm64"
+        },
+        {
+          "label": "# Option B: inspect the script first, then run it",
+          "code": "curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/download.sh -o download.sh\nsed -n '1,220p' download.sh\nbash download.sh"
+        }
+      ]
     },
     {
       "kicker": "Access the Platform",
@@ -348,22 +357,6 @@
           ["Notification routing", "Manual PagerDuty/Jira wiring per team", "Notifier routes by org ownership and severity"],
           ["Next actions", "Tribal knowledge and guesswork", "Suggested actions + blast radius from Resolver"],
           ["Post-incident", "Retro doc in a Google Doc nobody reads", "Resolution note required—feeds knowledge base"]
-        ]
-      }
-    },
-    {
-      "kicker": "Troubleshooting",
-      "title": "Common issues and where to look.",
-      "type": "table",
-      "table": {
-        "columns": ["Symptom", "Likely Cause", "Fix"],
-        "rows": [
-          ["403 Forbidden on API", "Tenant scope mismatch or expired API key", "Check active key in top nav; verify key hasn't expired in Key Management"],
-          ["403 on Grafana Proxy (8080)", "No valid UI session token", "Log in via 5173 first; the proxy requires a session token from the control plane"],
-          ["No data in Grafana", "Wrong datasource URL or key mismatch", "curl http://localhost:4319/ready; verify datasource uses proxied URL + correct API key"],
-          ["RCA job hangs", "Resolver service unreachable or token mismatch", "docker compose ps; check Resolver logs; verify token scope matches the data plane"],
-          ["OTLP data not arriving", "Gateway rejecting token", "Check x-otlp-token header in collector config; verify token exists and is active in Key Management"],
-          ["ALLOWLIST 403 (fail-closed)", "IP not in allowlist, ALLOWLIST_FAIL_OPEN=false", "Add your IP to the relevant allowlist env var or set ALLOWLIST_FAIL_OPEN=true temporarily"]
         ]
       }
     },
