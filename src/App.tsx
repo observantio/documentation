@@ -101,6 +101,9 @@ bash download.sh ${stackReleaseTag}`,
 
 tar -xzf observantio-${stackReleaseTag}-helm-charts.tar.gz
 
+# Enter the extracted chart root
+cd observantio-${stackReleaseTag}-helm-charts
+
 # Run installer.sh from the extracted chart root
 bash installer.sh --profile production --foreground`,
   installer: `curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/install.py -o install.py && python3 install.py`,
@@ -963,7 +966,8 @@ function PillChoice({
         >
           {stackHelmArchiveName}
         </a>
-        , untar it with <code>tar -xzf {stackHelmArchiveName}</code>, and run
+        , untar it with <code>tar -xzf {stackHelmArchiveName}</code>,
+        <code>cd</code> into the extracted directory, and run
         <code>installer.sh</code> from the extracted chart root.
       </span>
     ) : activeInstallTab === "helm" ? (
