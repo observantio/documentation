@@ -179,6 +179,21 @@ body {
   color: #f0fdfa;
 }
 
+.showcase-home-tab-helm {
+  border-color: rgb(79 70 229 / 0.62);
+  background: linear-gradient(180deg, #312e81 0%, #1e1b4b 100%);
+  color: #eef2ff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 12px 24px rgb(79 70 229 / 0.2);
+}
+
+.showcase-home-tab-helm:hover {
+  border-color: rgb(129 140 248 / 0.78);
+  background: linear-gradient(180deg, #4338ca 0%, #312e81 100%);
+  color: #eef2ff;
+}
+
 .showcase-home-tab-installer {
   border-color: rgb(71 85 105 / 0.65);
   background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
@@ -431,6 +446,21 @@ body {
   color: #082f49;
 }
 
+:root[data-theme="light"] .showcase-home-tab-helm {
+  border-color: rgb(99 102 241 / 0.64);
+  background: linear-gradient(180deg, #c7d2fe 0%, #a5b4fc 100%);
+  color: #1e1b4b;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    0 12px 24px rgb(79 70 229 / 0.16);
+}
+
+:root[data-theme="light"] .showcase-home-tab-helm:hover {
+  border-color: rgb(99 102 241 / 0.76);
+  background: linear-gradient(180deg, #a5b4fc 0%, #818cf8 100%);
+  color: #1e1b4b;
+}
+
 :root[data-theme="light"] .showcase-home-tab-installer {
   border-color: rgb(148 163 184 / 0.82);
   background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
@@ -535,6 +565,16 @@ body {
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-linux,
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-windows,
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-stack {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 12px 24px rgb(15 23 42 / 0.14);
+}
+
+:root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-helm,
+:root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-helm:hover {
   background: #0f172a;
   color: #ffffff;
   border-color: #0f172a;
