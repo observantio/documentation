@@ -179,6 +179,21 @@ body {
   color: #f0fdfa;
 }
 
+.showcase-home-tab-installer {
+  border-color: rgb(71 85 105 / 0.65);
+  background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
+  color: #f8fafc;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 12px 24px rgb(15 23 42 / 0.22);
+}
+
+.showcase-home-tab-installer:hover {
+  border-color: rgb(96 165 250 / 0.7);
+  background: linear-gradient(180deg, #475569 0%, #1f2937 100%);
+  color: #ffffff;
+}
+
 .showcase-home-tab-linux {
   border-color: rgb(34 197 94 / 0.6);
   background: linear-gradient(180deg, #166534 0%, #14532d 100%);
@@ -416,6 +431,24 @@ body {
   color: #082f49;
 }
 
+:root[data-theme="light"] .showcase-home-tab-installer {
+  border-color: rgb(148 163 184 / 0.82);
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  color: #0f172a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    0 12px 24px rgb(15 23 42 / 0.08);
+}
+
+:root[data-theme="light"] .showcase-home-tab-installer:hover {
+  border-color: rgb(59 130 246 / 0.72);
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  color: #0f172a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    0 14px 28px rgb(59 130 246 / 0.1);
+}
+
 :root[data-theme="light"] .showcase-home-tab-linux {
   border-color: rgb(22 163 74 / 0.62);
   background: linear-gradient(180deg, #86efac 0%, #4ade80 100%);
@@ -502,6 +535,16 @@ body {
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-linux,
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-windows,
 :root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-stack {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 12px 24px rgb(15 23 42 / 0.14);
+}
+
+:root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-installer,
+:root[data-theme="light"] .showcase-home-tab-active.showcase-home-tab-installer:hover {
   background: #0f172a;
   color: #ffffff;
   border-color: #0f172a;

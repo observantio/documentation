@@ -7,6 +7,7 @@ import {
   Brain,
   CheckCircle2,
   Container,
+  Code2,
   FileText,
   FolderGit2,
   Github,
@@ -22,6 +23,7 @@ import {
 import { slidesJson } from "./data/slideData";
 import type { Path, SlideData } from "./data/slideTypes";
 import sunIcon from "./assets/sun.png";
+import kubernetesIcon from "../../assets/kubernetes.png";
 import { BUILD_TIMESTAMP } from "./buildInfo";
 
 const clamp = (n: number, min: number, max: number) =>
@@ -34,6 +36,12 @@ const RED_GLOW = "rgba(239,68,68,0.14)";
 
 const WATCHDOG_README_URL =
   "https://github.com/observantio/watchdog/blob/main/README.md";
+const WATCHDOG_CHART_README_URL =
+  "https://github.com/observantio/watchdog/blob/main/charts/observantio/README.md";
+const WATCHDOG_INSTALLER_URL =
+  "https://raw.githubusercontent.com/observantio/watchdog/main/install.py";
+const WATCHDOG_CHART_INSTALLER_URL =
+  "https://github.com/observantio/watchdog/blob/main/charts/observantio/installer.sh";
 const OJO_README_URL = "https://github.com/observantio/ojo/blob/main/README.md";
 const DOC_LINKS = [
   {
@@ -47,13 +55,16 @@ const DOC_LINKS = [
 ];
 const WATCHDOG_DEPLOYMENT_GUIDE_URL =
   "https://github.com/observantio/watchdog/blob/main/DEPLOYMENT.md";
+const WATCHDOG_RELEASES_URL = "https://github.com/observantio/watchdog/releases";
 const OJO_DEPLOYMENT_GUIDE_URL =
   "https://github.com/observantio/ojo/blob/main/DEPLOYMENT.md";
 const DEFAULT_STACK_RELEASE_TAG = "v0.0.3";
 const DEFAULT_OJO_RELEASE_TAG = "v0.0.3";
-type InstallerTab = "stack" | "linux" | "windows";
+type InstallerTab = "stack" | "helm" | "installer" | "linux" | "windows";
 const INSTALL_TABS: Array<{ key: InstallerTab; label: string }> = [
   { key: "stack", label: "Stack" },
+  { key: "helm", label: "Helm Release" },
+  { key: "installer", label: "Quick Development" },
   { key: "linux", label: "Ojo Linux" },
   { key: "windows", label: "Ojo Windows" },
 ];
@@ -87,6 +98,13 @@ function getInstallCommand(
 # Supported arch values: amd64 | arm64 | multi
 
 bash download.sh ${stackReleaseTag}`,
+  helm: `curl -L https://github.com/observantio/watchdog/releases/download/${stackReleaseTag}/observantio-${stackReleaseTag}-helm-charts.tar.gz -o observantio-${stackReleaseTag}-helm-charts.tar.gz
+
+tar -xzf observantio-${stackReleaseTag}-helm-charts.tar.gz
+
+# Run installer.sh from the extracted chart root
+bash installer.sh --profile production --foreground`,
+  installer: `curl -fsSL https://raw.githubusercontent.com/observantio/watchdog/main/install.py -o install.py && python3 install.py`,
     linux: `curl -L https://github.com/observantio/ojo/releases/download/${ojoReleaseTag}/ojo-${ojoReleaseTag}-linux-x86_64 -o ojo
 chmod +x ojo
 sudo mv ojo /usr/local/bin/ojo
@@ -126,9 +144,22 @@ function LinuxPenguinIcon() {
   );
 }
 
+function KubernetesIcon() {
+  return (
+    <img
+      src={kubernetesIcon}
+      alt=""
+      className="h-4 w-4 object-contain"
+      aria-hidden="true"
+    />
+  );
+}
+
 function installerTabIcon(tab: InstallerTab) {
   if (tab === "windows") return <Monitor className="h-4 w-4" />;
   if (tab === "linux") return <LinuxPenguinIcon />;
+  if (tab === "installer") return <Code2 className="h-4 w-4" />;
+  if (tab === "helm") return <KubernetesIcon />;
   return <Container className="h-4 w-4" />;
 }
 
@@ -891,15 +922,77 @@ function PillChoice({
     stackReleaseTag,
     ojoReleaseTag,
   );
-  const isStackTab = activeInstallTab === "stack";
-  const deploymentGuideUrl = isStackTab
+  const isWatchdogInstallTab =
+    activeInstallTab === "stack" || activeInstallTab === "installer";
+  const stackHelmArchiveName = `observantio-${stackReleaseTag}-helm-charts.tar.gz`;
+  const helmReleaseTarballUrl = `https://github.com/observantio/watchdog/releases/download/${stackReleaseTag}/${stackHelmArchiveName}`;
+  const deploymentGuideUrl = isWatchdogInstallTab
     ? WATCHDOG_DEPLOYMENT_GUIDE_URL
     : OJO_DEPLOYMENT_GUIDE_URL;
-  const releaseUrl = getReleaseUrl(isStackTab, stackReleaseTag, ojoReleaseTag);
+  const releaseUrl =
+    activeInstallTab === "helm"
+      ? WATCHDOG_RELEASES_URL
+      : getReleaseUrl(isWatchdogInstallTab, stackReleaseTag, ojoReleaseTag);
 
-  const docsLinkItems = isStackTab
-    ? DOC_LINKS
-    : [{ label: "README", href: OJO_README_URL }];
+  const docsLinkItems =
+    activeInstallTab === "helm"
+      ? [{ label: "README", href: WATCHDOG_CHART_README_URL }]
+      : isWatchdogInstallTab
+        ? DOC_LINKS
+        : [{ label: "README", href: OJO_README_URL }];
+
+  const installHint =
+    activeInstallTab === "stack" ? (
+      <span>
+        Stack install is intended for Linux hosts, preferably Ubuntu or Amazon
+        Linux. Kubernetes Helm: use{" "}
+        <a
+          href={WATCHDOG_CHART_INSTALLER_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="showcase-link-inline inline-flex items-center gap-1.5 transition underline decoration-dotted decoration-current underline-offset-2"
+        >
+          charts/observantio/installer.sh
+        </a>
+        , which wraps the Helm chart and its profile-driven values files, or
+        download the latest Helm release tarball{" "}
+        <a
+          href={helmReleaseTarballUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="showcase-link-inline inline-flex items-center gap-1.5 transition underline decoration-dotted decoration-current underline-offset-2"
+        >
+          {stackHelmArchiveName}
+        </a>
+        , untar it with <code>tar -xzf {stackHelmArchiveName}</code>, and run
+        <code>installer.sh</code> from the extracted chart root.
+      </span>
+    ) : activeInstallTab === "helm" ? (
+      <span>
+        Helm release: download the latest chart tarball for your release tag,
+        untar it, and run <code>installer.sh</code> from the extracted chart
+        root. The links below point to the deployment guide, release page, and
+        chart README.
+      </span>
+    ) : activeInstallTab === "installer" ? (
+      <span>
+        Local development: fetch{" "}
+        <a
+          href={WATCHDOG_INSTALLER_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="showcase-link-inline inline-flex items-center gap-1.5  mr-1.5transition underline decoration-dotted decoration-current underline-offset-2"
+        >
+          install.py
+        </a>{" "}
+        from the main branch to create a working <code>.env</code>, clone
+        companion repos if needed, and start the compose stack.
+      </span>
+    ) : (
+      <span>
+        Use the latest Ojo {ojoReleaseTag} binary for your host.
+      </span>
+    );
 
   useEffect(() => {
     let active = true;
@@ -1001,7 +1094,7 @@ function PillChoice({
             </div>
           </div>
 
-          <div className="showcase-home-tabs mb-3 grid w-full grid-cols-1 gap-2 rounded-xl p-1 sm:grid-cols-3">
+          <div className="showcase-home-tabs mb-3 grid w-full grid-cols-1 gap-2 rounded-xl p-1 sm:grid-cols-4">
             {INSTALL_TABS.map((tab) => {
               const active = activeInstallTab === tab.key;
               return (
@@ -1023,11 +1116,12 @@ function PillChoice({
                       {installerTabIcon(tab.key)}
                     </span>
                     <span>
+                      {tab.label}
                       {tab.key === "stack"
-                        ? `Stack ${stackReleaseTag}`
-                        : tab.key === "linux"
-                        ? `Ojo Linux ${ojoReleaseTag}`
-                        : `Ojo Windows ${ojoReleaseTag}`}
+                        ? ` ${stackReleaseTag}`
+                        : tab.key === "linux" || tab.key === "windows"
+                        ? ` ${ojoReleaseTag}`
+                        : ""}
                     </span>
                   </span>
                 </button>
@@ -1057,11 +1151,7 @@ function PillChoice({
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-retro-dim">
-            <span>
-              {isStackTab
-                ? `Stack install is intended for Linux hosts, preferably Ubuntu or Amazon Linux.`
-                : `Use the latest Ojo ${ojoReleaseTag} binary for your host.`}
-            </span>
+            {installHint}
             <a
               href={deploymentGuideUrl}
               target="_blank"
