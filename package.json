@@ -8,7 +8,8 @@
     "build:info": "node ./scripts/generate-build-info.js",
     "build": "npm run build:info && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:origin": "bash scripts/sync-origin-main.sh"
   },
   "dependencies": {
     "framer-motion": "^11.11.9",

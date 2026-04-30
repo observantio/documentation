@@ -6,8 +6,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Ubuntu Mono", "monospace"],
-        mono: ["Ubuntu Mono", "monospace"],
+        sans: ['"Noto Serif"', "Georgia", "Times New Roman", "serif"],
+        mono: ["Ubuntu Mono", "ui-monospace", "monospace"],
       },
     },
   },

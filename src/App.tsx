@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
-  Brain,
   CheckCircle2,
   Container,
   Code2,
@@ -13,8 +12,6 @@ import {
   Github,
   Lock,
   Monitor,
-  Rocket,
-  Sparkles,
   Terminal,
   Copy,
   Moon,
@@ -28,10 +25,21 @@ import { BUILD_TIMESTAMP } from "./buildInfo";
 const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
 
-const BLUE = "#3b82f6";
-const RED = "#ef4444";
-const BLUE_GLOW = "rgba(59,130,246,0.14)";
-const RED_GLOW = "rgba(239,68,68,0.14)";
+/** Firefox-inspired accent spectrum (orange · gold · purple · magenta) */
+const PURPLE = "#9059ff";
+const ORANGE = "#ff7139";
+
+const motionSpring = {
+  type: "spring" as const,
+  stiffness: 420,
+  damping: 32,
+  mass: 0.85,
+};
+const motionGentle = {
+  type: "spring" as const,
+  stiffness: 280,
+  damping: 26,
+};
 
 const WATCHDOG_README_URL =
   "https://github.com/observantio/watchdog/blob/main/README.md";
@@ -189,14 +197,9 @@ function findHorizontalScrollContainer(
 }
 
 function pathAccent(path: Path) {
-  if (path === "understand") return BLUE;
-  if (path === "use") return RED;
-  return "#00ffaa";
-}
-function pathGlow(path: Path) {
-  if (path === "understand") return BLUE_GLOW;
-  if (path === "use") return RED_GLOW;
-  return "rgba(0,255,170,0.18)";
+  if (path === "understand") return PURPLE;
+  if (path === "use") return ORANGE;
+  return "#ffbd4f";
 }
 
 type ThemeMode = "dark" | "light";
@@ -215,30 +218,39 @@ function ThemeToggleButton({
       onClick={onToggle}
       aria-label={`Switch to ${goingToLight ? "light" : "dark"} mode`}
       title={`Switch to ${goingToLight ? "light" : "dark"} mode`}
-      className="fixed top-4 right-4 z-50 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-mono transition min-h-10"
+      className="showcase-focus-ring fixed top-5 right-4 z-[80] inline-flex items-center gap-2 rounded-2xl border-[3px] border-[#2d1b48] px-3 py-2 text-xs font-mono transition-colors duration-200 min-h-10"
       style={{
-        borderColor: goingToLight ? BLUE + "55" : "#54657d",
-        backgroundColor: goingToLight ? BLUE + "24" : "#f8fafcde",
-        color: goingToLight ? "#f3f7ff" : "#0f172a",
-        boxShadow: "0 10px 30px rgba(2, 8, 23, 0.2)",
+        borderColor: "#2d1b48",
+        backgroundColor: goingToLight ? "#a090e8" : "#ffffff",
+        color: goingToLight ? "#2d1b48" : "#241030",
       }}
     >
       {goingToLight ? (
         <img src={sunIcon} alt="" className="h-4 w-4 object-contain" />
       ) : (
-        <Moon className="h-4 w-4" />
+        <Moon className={`h-4 w-4 ${goingToLight ? "text-[#ffbd4f]" : "text-[#9059ff]"}`} />
       )}
       <span>{goingToLight ? "Light mode" : "Dark mode"}</span>
     </button>
   );
 }
 
+function ShowcaseBgFx({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <div
+      className="showcase-bg-fx pointer-events-none fixed z-0"
+      aria-hidden
+    />
+  );
+}
+
 function renderCommandLine(line: string) {
   const trimmed = line.trim();
-  if (!trimmed) return <span className="text-zinc-500"> </span>;
+  if (!trimmed) return <span className="showcase-terminal-muted"> </span>;
 
   if (trimmed.startsWith("#")) {
-    return <span className="text-zinc-500">{line}</span>;
+    return <span className="showcase-terminal-comment">{line}</span>;
   }
 
   const assignMatch = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
@@ -247,48 +259,57 @@ function renderCommandLine(line: string) {
     return (
       <>
         <span className="text-sky-300">{key}</span>
-        <span className="text-zinc-400">=</span>
+        <span className="showcase-terminal-muted">=</span>
         <span className="text-amber-300">{value}</span>
       </>
     );
   }
 
   const commandMatch = line.match(/^(\s*)([a-zA-Z0-9_.-]+)(.*)$/);
-  if (!commandMatch) return <span className="text-zinc-200">{line}</span>;
+  if (!commandMatch) return <span className="showcase-terminal-text">{line}</span>;
 
   const [, indent, cmd, rest] = commandMatch;
   return (
     <>
-      <span className="text-zinc-500">{indent}</span>
+      <span className="showcase-terminal-gutter">{indent}</span>
       <span className="text-emerald-300">{cmd}</span>
-      <span className="text-zinc-200">{rest}</span>
+      <span className="showcase-terminal-text">{rest}</span>
     </>
   );
 }
 
-function IdeCodeBlock({ code }: { code: string }) {
+function IdeCodeBlock({
+  code,
+  headerExtra,
+}: {
+  code: string;
+  headerExtra?: React.ReactNode;
+}) {
   const lines = code.split("\n");
   return (
-    <div
-      className="showcase-code-shell relative w-full text-left"
-    >
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden">
-        <div className="showcase-code-header flex items-center gap-1.5 px-4 py-2 border-b border-zinc-800 bg-black/30">
-          <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-          <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
-          <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-          <span className="ml-2 text-[11px] font-mono text-zinc-500">
-            terminal
-          </span>
+    <div className="showcase-code-shell relative w-full text-left">
+      <div className="showcase-code-window rounded-3xl border-[3px] border-[#2d1b48] overflow-hidden">
+        <div className="showcase-code-header flex min-h-[44px] items-center justify-between gap-3 px-3 py-2 sm:px-4 sm:py-2.5 border-b-[3px] border-[#2d1b48]">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#ff5a6e]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd4f]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#3fe489]" />
+            </div>
+            <span className="showcase-terminal-label truncate text-[11px] font-mono font-semibold uppercase tracking-wider">
+              terminal
+            </span>
+          </div>
+          {headerExtra ?? null}
         </div>
-        <pre className="showcase-code px-3 sm:px-4 py-3 text-left font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-700/50 hover:scrollbar-thumb-zinc-600/60">
+        <pre className="showcase-code px-3 sm:px-4 py-3 text-left font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto">
           <code>
             {lines.map((line, idx) => (
               <div
                 key={`${idx}-${line}`}
                 className="grid grid-cols-[2.4rem_1fr] sm:grid-cols-[2.9rem_1fr] gap-3"
               >
-                <span className="select-none pr-1 text-right tabular-nums text-zinc-600">
+                <span className="showcase-terminal-gutter select-none pr-1 text-right tabular-nums">
                   {idx + 1}
                 </span>
                 <span>{renderCommandLine(line)}</span>
@@ -363,12 +384,8 @@ function CodeBlockSection({
 function Tag({ label, accent }: { label: string; accent: string }) {
   return (
     <span
-      className="inline-block rounded px-2 py-0.5 text-xs font-mono"
-      style={{
-        backgroundColor: accent + "18",
-        border: `1px solid ${accent}40`,
-        color: accent,
-      }}
+      className="showcase-tag"
+      style={{ borderLeftColor: accent }}
     >
       {label}
     </span>
@@ -383,7 +400,7 @@ function BoolCell({ val, accent }: { val: boolean | string; accent: string }) {
       </span>
     );
   if (val === false) return <span className="text-retro-dim text-lg">✗</span>;
-  return <span className="text-xs text-zinc-400">{val}</span>;
+  return <span className="text-xs showcase-body-copy">{val}</span>;
 }
 
 function GenericTable({ slide, accent }: { slide: SlideData; accent: string }) {
@@ -392,22 +409,21 @@ function GenericTable({ slide, accent }: { slide: SlideData; accent: string }) {
 
   return (
     <div
-      className="mt-6 overflow-x-auto rounded-2xl border"
+      className="showcase-generic-table-wrap mt-6 overflow-x-auto rounded-2xl border"
       style={{ borderColor: accent + "35" }}
     >
       <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr
             style={{
-              backgroundColor: accent + "10",
-              borderBottom: `1px solid ${accent}25`,
+              backgroundColor: accent + "12",
+              borderBottom: `1px solid ${accent}35`,
             }}
           >
             {t.columns.map((c, i) => (
               <th
                 key={i}
-                className="py-2.5 px-4 text-left font-mono text-xs uppercase tracking-wider"
-                style={{ color: i === 0 ? "#a1a1aa" : accent }}
+                className="py-3 px-4 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs"
               >
                 {c}
               </th>
@@ -420,13 +436,15 @@ function GenericTable({ slide, accent }: { slide: SlideData; accent: string }) {
               key={ri}
               style={{
                 borderBottom:
-                  ri < t.rows.length - 1 ? `1px solid ${accent}15` : "none",
+                  ri < t.rows.length - 1 ? `1px solid ${accent}18` : "none",
               }}
             >
               {row.map((cell, ci) => (
                 <td
                   key={ci}
-                  className={`py-2.5 px-4 ${ci === 0 ? "text-zinc-200" : "text-zinc-300"}`}
+                  className={`showcase-body-copy py-3 px-4 align-top text-xs leading-relaxed sm:text-sm ${
+                    ci === 0 ? "font-semibold" : "font-normal"
+                  }`}
                 >
                   {typeof cell === "boolean" ? (
                     <BoolCell val={cell} accent={accent} />
@@ -478,7 +496,7 @@ function SlideGallery({ slide, accent }: { slide: SlideData; accent: string }) {
           />
           {g.alt && (
             <div
-              className="px-3 py-2 text-xs text-zinc-400 font-mono border-t"
+              className="showcase-slide-caption px-3 py-2 text-xs font-mono border-t"
               style={{ borderColor: accent + "20" }}
             >
               {g.alt}
@@ -514,7 +532,7 @@ function SlideLinks({ slide, accent }: { slide: SlideData; accent: string }) {
           href={item.href}
           target="_blank"
           rel="noreferrer"
-          className="rounded-2xl border p-4 bg-retro-bg/40 hover:bg-retro-bg/70 transition-colors"
+          className="showcase-inset-card rounded-2xl border p-4 transition-colors"
           style={{ borderColor: accent + "35" }}
         >
           <div className="flex items-center justify-between gap-3">
@@ -529,14 +547,14 @@ function SlideLinks({ slide, accent }: { slide: SlideData; accent: string }) {
               >
                 {linkIcon(item.label, item.href)}
               </span>
-              <div className="text-sm font-semibold" style={{ color: accent }}>
+              <div className="text-sm font-semibold text-retro-text">
                 {item.label}
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-retro-dim" />
           </div>
           {item.description && (
-            <div className="mt-2 text-xs text-zinc-400 leading-relaxed">
+            <div className="mt-2 text-xs showcase-slide-secondary leading-relaxed">
               {item.description}
             </div>
           )}
@@ -560,10 +578,9 @@ function renderContent(slide: SlideData, accent: string) {
               className="showcase-body-copy flex gap-3 text-base sm:text-lg leading-relaxed"
             >
               <span
-                className="mt-2.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                className="mt-2.5 h-2 w-2 flex-shrink-0 rounded-full border-2 border-[#2d1b48]"
                 style={{
                   backgroundColor: accent,
-                  boxShadow: `0 0 8px ${accent}`,
                 }}
               />
               {b}
@@ -578,7 +595,7 @@ function renderContent(slide: SlideData, accent: string) {
           {slide.metrics?.map((m, i) => (
             <div
               key={i}
-              className="rounded-2xl border bg-retro-bg/40 p-5"
+              className="showcase-inset-card rounded-2xl border p-5"
               style={{ borderColor: accent + "35" }}
             >
               <div
@@ -587,11 +604,11 @@ function renderContent(slide: SlideData, accent: string) {
               >
                 {m.value}
               </div>
-              <div className="mt-1 text-sm font-semibold text-zinc-100">
+              <div className="mt-1 text-sm font-semibold tracking-tight text-retro-text">
                 {m.label}
               </div>
               {m.sub && (
-                <div className="mt-1 text-xs text-retro-dim">{m.sub}</div>
+                <div className="showcase-metric-sub">{m.sub}</div>
               )}
             </div>
           ))}
@@ -628,7 +645,7 @@ function renderContent(slide: SlideData, accent: string) {
                     className="showcase-body-copy flex gap-2.5 text-sm leading-relaxed"
                   >
                     <span
-                      className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                      className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full border-2 border-[#2d1b48]"
                       style={{ backgroundColor: accent }}
                     />
                     {b}
@@ -648,31 +665,27 @@ function renderContent(slide: SlideData, accent: string) {
     case "comparison":
       return (
         <div
-          className="mt-6 overflow-x-auto rounded-2xl border"
+          className="showcase-generic-table-wrap mt-6 overflow-x-auto rounded-2xl border"
           style={{ borderColor: accent + "35" }}
         >
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr
-                className="border-b"
                 style={{
-                  borderColor: accent + "25",
-                  backgroundColor: accent + "10",
+                  borderBottom: `1px solid ${accent}35`,
+                  backgroundColor: accent + "12",
                 }}
               >
-                <th className="py-3 px-4 text-left font-mono text-xs uppercase tracking-wider text-retro-dim">
+                <th className="py-3 px-4 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Feature
                 </th>
-                <th
-                  className="py-3 px-4 text-center font-mono text-xs uppercase tracking-wider"
-                  style={{ color: accent }}
-                >
+                <th className="py-3 px-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Watchdog
                 </th>
-                <th className="py-3 px-4 text-center font-mono text-xs uppercase tracking-wider text-retro-dim">
+                <th className="py-3 px-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Datadog
                 </th>
-                <th className="py-3 px-4 text-center font-mono text-xs uppercase tracking-wider text-retro-dim">
+                <th className="py-3 px-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Grafana
                 </th>
               </tr>
@@ -681,19 +694,23 @@ function renderContent(slide: SlideData, accent: string) {
               {slide.comparison?.map((row, i) => (
                 <tr
                   key={i}
-                  className="border-b last:border-0"
-                  style={{ borderColor: accent + "15" }}
+                  style={{
+                    borderBottom:
+                      i < (slide.comparison?.length ?? 0) - 1
+                        ? `1px solid ${accent}18`
+                        : "none",
+                  }}
                 >
-                  <td className="py-3 px-4 text-zinc-200 text-xs sm:text-sm">
+                  <td className="showcase-body-copy py-3 px-4 align-top text-xs font-semibold leading-relaxed sm:text-sm">
                     {row.feature}
                   </td>
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-3 px-4 text-center align-top">
                     <BoolCell val={row.us} accent={accent} />
                   </td>
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-3 px-4 text-center align-top">
                     <BoolCell val={row.datadog} accent={accent} />
                   </td>
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-3 px-4 text-center align-top">
                     <BoolCell val={row.grafana} accent={accent} />
                   </td>
                 </tr>
@@ -732,11 +749,10 @@ function renderContent(slide: SlideData, accent: string) {
                 {layer.nodes.map((node) => (
                   <div
                     key={node}
-                    className="rounded-xl border px-3 py-1.5 text-xs font-mono"
+                    className="showcase-slide-arch-chip rounded-xl border px-3 py-1.5 text-xs font-mono"
                     style={{
                       borderColor: accent + "40",
                       backgroundColor: accent + "0D",
-                      color: "#d4d4d8",
                     }}
                   >
                     {node}
@@ -798,10 +814,10 @@ function renderContent(slide: SlideData, accent: string) {
                 )}
               </div>
               <div className="pb-4">
-                <div className="font-semibold text-zinc-100 text-sm">
+                <div className="text-sm font-semibold text-retro-text">
                   {step.label}
                 </div>
-                <div className="mt-1 text-sm text-zinc-400 leading-relaxed">
+                <div className="showcase-body-copy mt-1 text-sm leading-relaxed">
                   {step.detail}
                 </div>
               </div>
@@ -813,27 +829,24 @@ function renderContent(slide: SlideData, accent: string) {
     case "savings":
       return (
         <div
-          className="mt-6 overflow-x-auto rounded-2xl border"
+          className="showcase-generic-table-wrap mt-6 overflow-x-auto rounded-2xl border"
           style={{ borderColor: accent + "35" }}
         >
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr
                 style={{
-                  backgroundColor: accent + "10",
-                  borderBottom: `1px solid ${accent}25`,
+                  backgroundColor: accent + "12",
+                  borderBottom: `1px solid ${accent}35`,
                 }}
               >
-                <th className="py-2.5 px-4 text-left font-mono text-xs uppercase tracking-wider text-retro-dim">
+                <th className="py-3 px-4 text-left font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Metric
                 </th>
-                <th className="py-2.5 px-4 text-center font-mono text-xs uppercase tracking-wider text-retro-dim">
+                <th className="py-3 px-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   Before
                 </th>
-                <th
-                  className="py-2.5 px-4 text-center font-mono text-xs uppercase tracking-wider"
-                  style={{ color: accent }}
-                >
+                <th className="py-3 px-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-retro-text sm:text-xs">
                   After / Saved
                 </th>
               </tr>
@@ -845,18 +858,18 @@ function renderContent(slide: SlideData, accent: string) {
                   style={{
                     borderBottom:
                       i < (slide.savings?.length ?? 0) - 1
-                        ? `1px solid ${accent}15`
+                        ? `1px solid ${accent}18`
                         : "none",
                   }}
                 >
-                  <td className="py-2.5 px-4 text-xs text-zinc-300">
+                  <td className="showcase-body-copy py-3 px-4 align-top text-xs font-semibold sm:text-sm">
                     {row.metric}
                   </td>
-                  <td className="py-2.5 px-4 text-center text-xs text-zinc-400 font-mono">
+                  <td className="showcase-body-copy py-3 px-4 text-center align-top text-xs font-mono leading-relaxed sm:text-sm">
                     {row.before}
                   </td>
                   <td
-                    className="py-2.5 px-4 text-center text-xs font-mono font-semibold"
+                    className="py-3 px-4 text-center align-top text-xs font-mono font-semibold leading-relaxed sm:text-sm"
                     style={{ color: accent }}
                   >
                     {row.unit ? row.unit : row.after}
@@ -883,7 +896,7 @@ function renderContent(slide: SlideData, accent: string) {
               License
             </span>
           </div>
-          <pre className="text-xs text-zinc-400 font-mono leading-relaxed whitespace-pre-wrap">
+          <pre className="showcase-slide-secondary text-xs font-mono leading-relaxed whitespace-pre-wrap">
             {slide.licenseText}
           </pre>
         </div>
@@ -1032,72 +1045,115 @@ function PillChoice({
   };
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 py-8 sm:px-6">
-        <div className="pointer-events-none fixed inset-0 opacity-[0.02]">
-          <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
-        </div>
+    <main className="showcase-page min-h-screen text-retro-text font-sans flex flex-col items-center justify-start relative z-10 overflow-hidden px-5 sm:px-10 pt-12 sm:pt-16">
+
+      <div className="showcase-subtle-grid opacity-[0.025]" aria-hidden />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: {
+            transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+          },
+        }}
         className="relative z-10 flex w-full max-w-6xl flex-col text-left"
       >
-        <div className="mb-4 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-retro-glow" />
-          <span className="text-xs uppercase tracking-[0.22em] text-retro-dim">
-            Observantio's LGTM
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 18 },
+            show: { opacity: 1, y: 0, transition: motionSpring },
+          }}
+          className="mb-4"
+        >
+          <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.32em] text-retro-dim">
+            Observantio&apos;s LGTM
           </span>
-        </div>
+        </motion.div>
 
-        <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
-          <div className="h-20 w-20 rounded-full border-2 border-zinc-700 bg-zinc-950 p-2">
-            <img
-              src={withBaseUrl("/wolf.png")}
-              alt="Observantio logo"
-              className="h-full w-full rounded-full"
-            />
-          </div>
-          <h1 className="max-w-5xl text-2xl font-bold tracking-tight sm:text-4xl">
-            LGTM stack management for self-hosted teams, made possible for free
-          </h1>
-        </div>
-        <p className="mb-6 max-w-4xl text-sm leading-relaxed text-retro-dim sm:text-base">
-          Our vision is to make the LGTM stack secure, usable, and affordable
-          for self-hosted teams by putting access control, guided operations,
-          and day-to-day workflows in one place.
-        </p>
-        <div className="mb-6 text-sm text-retro-text">
-          <a
-            href="https://www.linkedin.com/in/stefan-kumarasinghe"
-            target="_blank"
-            rel="noreferrer"
-            className={
-              theme === "dark"
-                ? "text-sky-300 hover:text-sky-200 transition-colors"
-                : "text-blue-800 hover:text-blue-700 transition-colors"
-            }
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 14 },
+            show: { opacity: 1, y: 0, transition: motionSpring },
+          }}
+          className="mb-6 space-y-4"
+        >
+          <motion.h1
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0, transition: motionSpring },
+            }}
+            className="showcase-hero-title max-w-5xl text-2xl font-semibold tracking-tight leading-[1.12] sm:text-4xl sm:leading-[1.08]"
           >
-            Stefan Kumarasinghe on LinkedIn
-          </a>
-          <span className="ml-3 text-xs text-zinc-400">
-            updated at {BUILD_TIMESTAMP}
-          </span>
-        </div>
+            LGTM stack management for self-hosted teams, made possible for free
+          </motion.h1>
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 14 },
+              show: { opacity: 1, y: 0, transition: motionGentle },
+            }}
+            className="max-w-3xl text-sm leading-relaxed text-retro-dim sm:text-base sm:text-lg"
+          >
+            Our vision is to make the LGTM stack secure, usable, and affordable
+            for self-hosted teams by putting access control, guided operations,
+            and day-to-day workflows in one place.
+          </motion.p>
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              show: { opacity: 1, y: 0, transition: motionGentle },
+            }}
+            className="text-sm text-retro-text"
+          >
+            <a
+              href="https://www.linkedin.com/in/stefan-kumarasinghe"
+              target="_blank"
+              rel="noreferrer"
+              className={
+                theme === "dark"
+                  ? "text-sky-300 hover:text-sky-200 transition-colors"
+                  : "text-blue-800 hover:text-blue-700 transition-colors"
+              }
+            >
+              Stefan Kumarasinghe on LinkedIn
+            </a>
+            <span className="ml-3 text-xs text-zinc-400">
+              updated at {BUILD_TIMESTAMP}
+            </span>
+          </motion.div>
+        </motion.div>
 
-        <div className="order-1">
-          <div className="mb-3 flex items-center justify-between gap-3">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 16 },
+            show: { opacity: 1, y: 0, transition: motionGentle },
+          }}
+          className="order-1"
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-retro-text">
+              <div className="text-sm font-bold tracking-wide text-retro-text">
                 Quick start
               </div>
-              <div className="text-xs text-retro-dim">
+              <div className="mt-0.5 text-xs font-mono text-retro-dim">
                 Choose an install target and copy the command.
               </div>
             </div>
+            <motion.a
+              href={DOC_LINKS[0].href}
+              target="_blank"
+              rel="noreferrer"
+              whileHover={{ scale: 1.03, transition: motionSpring }}
+              whileTap={{ scale: 0.97 }}
+              className="showcase-focus-ring inline-flex min-h-10 items-center gap-2 rounded-2xl border-[3px] border-[#2d1b48] bg-[#9059ff] px-4 py-2 text-xs font-mono font-semibold text-white transition-colors hover:bg-[#7c4dff]"
+            >
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              Product docs
+            </motion.a>
           </div>
 
-          <div className="showcase-home-tabs mb-3 grid w-full grid-cols-1 gap-2 rounded-xl p-1 sm:grid-cols-4">
+          <div className="showcase-home-tabs mb-4 grid w-full grid-cols-1 gap-2 rounded-2xl p-1.5 sm:grid-cols-2 lg:grid-cols-5">
             {INSTALL_TABS.map((tab) => {
               const active = activeInstallTab === tab.key;
               return (
@@ -1132,25 +1188,32 @@ function PillChoice({
             })}
           </div>
 
-          <div className="relative w-full">
-            <IdeCodeBlock code={activeInstallCommand} />
-            <button
-              onClick={handleCopy}
-              className="absolute top-2 right-2 rounded-md px-2 py-1 text-xs text-retro-dim transition hover:bg-retro-bg/60 hover:text-retro-text"
-              title="Copy command"
-            >
-              {copied ? (
-                <span className="inline-flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Copied
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1">
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
-                </span>
-              )}
-            </button>
+          <div className="w-full">
+            <IdeCodeBlock
+              code={activeInstallCommand}
+              headerExtra={
+                <motion.button
+                  type="button"
+                  onClick={handleCopy}
+                  whileHover={{ scale: 1.04, transition: motionSpring }}
+                  whileTap={{ scale: 0.96 }}
+                  className="showcase-focus-ring inline-flex max-w-full items-center gap-1 rounded-lg border-[3px] border-[#2d1b48] bg-[#ffecb8] px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wide text-[#2d1b48] sm:px-3 sm:text-[11px]"
+                  title="Copy command"
+                >
+                  {copied ? (
+                    <span className="inline-flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                      <span className="whitespace-nowrap">Copied</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
+                      <Copy className="h-3.5 w-3.5 shrink-0" />
+                      <span className="whitespace-nowrap">Copy</span>
+                    </span>
+                  )}
+                </motion.button>
+              }
+            />
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-retro-dim">
@@ -1186,139 +1249,127 @@ function PillChoice({
               </a>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="order-2 mt-10 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 22 },
+            show: { opacity: 1, y: 0, transition: motionSpring },
+          }}
+          className="order-2 mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
+        >
           <motion.button
+            type="button"
             onHoverStart={() => setHovered("understand")}
             onHoverEnd={() => setHovered(null)}
             onClick={() => onChoose("understand")}
-            className="showcase-path group relative overflow-hidden rounded-2xl border p-5 sm:p-6 text-left transition-all duration-200 min-h-[210px] flex flex-col"
-            style={{ color: hovered === "understand" ? BLUE : undefined }}
+            whileHover={{ y: -6, transition: motionSpring }}
+            whileTap={{ scale: 0.985 }}
+            className="showcase-focus-ring showcase-path showcase-path-understand group relative overflow-hidden rounded-2xl border-[3px] p-6 sm:p-7 text-left min-h-[220px] flex flex-col"
+            style={{
+              borderColor: hovered === "understand" ? PURPLE : undefined,
+            }}
           >
-            <div
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              style={{ background: `linear-gradient(180deg, ${BLUE}12, transparent 55%)` }}
-            />
-            <div className="mb-3 flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl border"
-                style={{
-                  opacity: hovered === "understand" ? 1 : 0.85,
-                  borderColor: BLUE + "33",
-                  backgroundColor: BLUE + "12",
-                }}
-              >
-                <Brain className="h-6 w-6" style={{ color: BLUE }} />
+            <div className="mb-4 flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-[3px] border-[#2d1b48] bg-[#9059ff] text-2xl">
+                🧠
               </div>
               <div>
-                <div className="font-bold text-xl" style={{ color: BLUE }}>
+                <div className="font-bold text-xl text-[#2d1b48]">
                   Platform Understanding
                 </div>
-                <div className="text-xs text-retro-dim uppercase tracking-wider">
+                <div className="mt-0.5 text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-[#2d1b48]/75">
                   Architecture and concepts
                 </div>
               </div>
             </div>
-            <p className="mb-4 text-sm leading-relaxed text-zinc-300">
+            <p className="mb-5 flex-1 text-sm leading-relaxed text-[#2d1b48]/90">
               Read the system flow, understand the services, and learn how the
               product fits around the LGTM stack.
             </p>
-            <div
-              className="mt-auto inline-flex items-center gap-2 text-sm font-semibold"
-              style={{ color: BLUE }}
-            >
+            <div className="mt-auto inline-flex w-fit max-w-full items-center gap-2 rounded-xl border-[3px] border-[#2d1b48] bg-[#fff9e8] px-3 py-2 text-sm font-bold font-mono text-[#2d1b48]">
               Open the guided architecture path
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1.5" />
             </div>
           </motion.button>
 
           <motion.button
+            type="button"
             onHoverStart={() => setHovered("use")}
             onHoverEnd={() => setHovered(null)}
             onClick={() => onChoose("use")}
-            className="showcase-path group relative overflow-hidden rounded-2xl border p-5 sm:p-6 text-left transition-all duration-200 min-h-[210px] flex flex-col"
-            style={{ color: hovered === "use" ? RED : undefined }}
+            whileHover={{ y: -6, transition: motionSpring }}
+            whileTap={{ scale: 0.985 }}
+            className="showcase-focus-ring showcase-path showcase-path-use group relative overflow-hidden rounded-2xl border-[3px] p-6 sm:p-7 text-left min-h-[220px] flex flex-col"
+            style={{
+              borderColor: hovered === "use" ? ORANGE : undefined,
+            }}
           >
-            <div
-              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              style={{ background: `linear-gradient(180deg, ${RED}10, transparent 55%)` }}
-            />
-            <div className="mb-3 flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl border"
-                style={{
-                  opacity: hovered === "use" ? 1 : 0.85,
-                  borderColor: RED + "33",
-                  backgroundColor: RED + "10",
-                }}
-              >
-                <Rocket className="h-6 w-6" style={{ color: RED }} />
+            <div className="mb-4 flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-[3px] border-[#2d1b48] bg-[#ff7139] text-2xl text-[#2d1b48]">
+                🚀
               </div>
               <div>
-                <div className="font-bold text-xl" style={{ color: RED }}>
+                <div className="font-bold text-xl text-[#2d1b48]">
                   Deployment Fast Track
                 </div>
-                <div className="text-xs text-retro-dim uppercase tracking-wider">
+                <div className="mt-0.5 text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-[#2d1b48]/75">
                   Install and operate
                 </div>
               </div>
             </div>
-            <p className="mb-4 text-sm leading-relaxed text-zinc-300">
+            <p className="mb-5 flex-1 text-sm leading-relaxed text-[#2d1b48]/90">
               Follow the shortest route to install, send telemetry, validate
               data, and start using the stack quickly.
             </p>
-            <div
-              className="mt-auto inline-flex items-center gap-2 text-sm font-semibold"
-              style={{ color: RED }}
-            >
+            <div className="mt-auto inline-flex w-fit max-w-full items-center gap-2 rounded-xl border-[3px] border-[#2d1b48] bg-[#fff9e8] px-3 py-2 text-sm font-bold font-mono text-[#2d1b48]">
               Open the install and usage path
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1.5" />
             </div>
           </motion.button>
-        </div>
+        </motion.div>
       </motion.div>
-    </div>
+    </main>
   );
 }
 
-const NOTICE_TEXT = `Copyright (c) 2026 Stefan Kumarasinghe
+const NOTICE_TEXT = `COPYRIGHT AND OWNERSHIP
+
+Copyright © 2026 Stefan Kumarasinghe.
+
+ORIGIN
 
 This product includes software developed by Stefan Kumarasinghe and contributors.
 
-────────────────────────────────────────
-LICENSING
-────────────────────────────────────────
+PROJECT LICENSE
 
-This project is licensed under the Apache License, Version 2.0 (the "License").
-You may obtain a copy of the License at:
+This project is released under the Apache License, Version 2.0 (the "License").
+The complete legal text is shown on the next step of this flow.
+
+Official copy of the license:
+
 http://www.apache.org/licenses/LICENSE-2.0
 
-────────────────────────────────────────
-THIRD-PARTY COMPONENTS & NON-ENDORSEMENT
-────────────────────────────────────────
+THIRD PARTY SOFTWARE
 
-This project utilizes several third-party components to provide observability
-and infrastructure capabilities.
+Watchdog incorporates third-party open-source components for observability,
+routing, storage, and application tooling. Names below appear for attribution
+only; this project is not affiliated with, endorsed by, or sponsored by those
+projects or their owners.
 
-Stefan Kumarasinghe and this project are not affiliated with, endorsed by,
-or sponsored by the owners of these projects.
+Observability and tracing — OpenTelemetry (OTel), Grafana, Loki, Tempo,
+Mimir, Alertmanager.
 
-Relevant third-party software includes (but is not limited to):
+Infrastructure and data — Envoy, PostgreSQL, Redis, NGINX.
 
-Observability & Tracing  —  OpenTelemetry (OTel), Grafana, Loki, Tempo, Mimir, Alertmanager
+Application stacks — FastAPI and the Python ecosystem; React and the
+JavaScript ecosystem.
 
-Infrastructure & Data    —  Envoy, PostgreSQL, Redis and Nginx
+FULL ATTRIBUTION
 
-Application Frameworks   —  FastAPI and the Python ecosystem, React and the JavaScript ecosystem
-
-────────────────────────────────────────
-ATTRIBUTION
-────────────────────────────────────────
-
-Each dependency remains subject to its own license terms. Refer to individual
-dependency manifests (requirements.txt, package.json) and upstream project
-repositories for full attribution and license text.`;
+Each dependency stays under its own license. See requirements.txt,
+package.json, lockfiles, and upstream repositories for complete notices and
+license text for bundled components.`;
 
 const LICENSE_TEXT = `Apache License
 Version 2.0, January 2004
@@ -1471,6 +1522,44 @@ function normalizeLegalText(docText: string) {
   return blocks;
 }
 
+function isLegalClauseHeading(text: string) {
+  return /^\d+\.\s+[A-Z]/.test(text.trim());
+}
+
+function LegalDocBlocks({
+  blocks,
+}: {
+  blocks: ReturnType<typeof normalizeLegalText>;
+}) {
+  return (
+    <>
+      {blocks.map((block, idx) => {
+        if (block.type === "blank")
+          return <div key={idx} className="h-2 shrink-0" aria-hidden />;
+        if (block.type === "divider")
+          return <hr key={idx} className="legal-doc-rule" />;
+        if (block.type === "heading") {
+          const clause = isLegalClauseHeading(block.text);
+          return clause ? (
+            <h3 key={idx} className="legal-doc-clause-title">
+              {block.text}
+            </h3>
+          ) : (
+            <h3 key={idx} className="legal-doc-section-title">
+              {block.text}
+            </h3>
+          );
+        }
+        return (
+          <p key={idx} className="legal-doc-p">
+            {block.text}
+          </p>
+        );
+      })}
+    </>
+  );
+}
+
 function LegalGate({
   path,
   onAccept,
@@ -1485,13 +1574,13 @@ function LegalGate({
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const accent = pathAccent(path);
-  const glow = pathGlow(path);
   const isNotice = step === "notice";
-  const docTitle = isNotice ? "NOTICE" : "LICENSE";
-  const docText = isNotice ? NOTICE_TEXT : LICENSE_TEXT;
   const btnLabel = isNotice
     ? "Continue to License →"
     : "I Accept — Begin Journey";
+
+  const noticeBlocks = useMemo(() => normalizeLegalText(NOTICE_TEXT), []);
+  const licenseBlocks = useMemo(() => normalizeLegalText(LICENSE_TEXT), []);
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -1513,134 +1602,102 @@ function LegalGate({
     if (isNotice) setStep("license");
     else onAccept();
   };
-  const legalBlocks = normalizeLegalText(docText);
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text font-sans flex flex-col items-center justify-center relative overflow-hidden px-4 py-8 sm:px-5 sm:py-10">
-      <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
-        <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
-      </div>
+    <main className="showcase-page min-h-screen text-retro-text font-sans flex flex-col items-center justify-start relative z-10 overflow-hidden px-5 sm:px-8 pt-12 pb-8">
+      <div className="showcase-subtle-grid opacity-[0.02]" aria-hidden />
 
       <motion.div
         key={step}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -16 }}
-        transition={{ duration: 0.25 }}
+        transition={motionGentle}
         className="relative z-10 w-full max-w-4xl"
       >
-        <div className="flex items-center justify-between gap-3 mb-5">
-          <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4" style={{ color: accent }} />
-            <span
-              className="text-xs font-mono uppercase tracking-[0.2em]"
-              style={{ color: accent }}
-            >
-              Legal Review
-            </span>
+        <div className="showcase-legal-toolbar">
+          <div className="showcase-legal-chip">
+            <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            Legal review
           </div>
-          <div className="text-xs font-mono text-retro-dim">
+          <span className="showcase-legal-step-pill">
             {isNotice ? "1 / 2" : "2 / 2"}
-          </div>
+          </span>
         </div>
 
-        <div className="overflow-hidden">
-          <div
-            className="flex items-center justify-between px-0 py-2"
-            style={{
-              borderColor: accent + "25",
-            }}
+        <article className="showcase-legal-sheet">
+          <header
+            className="showcase-legal-masthead border-l-[6px] border-solid"
+            style={{ borderLeftColor: accent }}
           >
-            <span className="text-xs font-mono font-bold tracking-wide text-retro-dim">
-              WATCHDOG / {docTitle}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-retro-dim" />
-              <span className="text-xs font-mono font-bold tracking-wide text-retro-dim">
-                {docTitle}
-              </span>
+            <div>
+              <p className="showcase-legal-masthead-meta">
+                Observantio · Watchdog
+              </p>
+              <h1 className="showcase-legal-masthead-title">
+                {isNotice ? "Notice" : "License"}
+              </h1>
+              <p className="showcase-legal-masthead-subtitle mt-1 font-mono text-[0.8125rem]">
+                {isNotice
+                  ? "Third-party attribution and licensing notice"
+                  : "Apache License, Version 2.0"}
+              </p>
+            </div>
+            <FileText
+              className="showcase-legal-masthead-icon hidden h-10 w-10 shrink-0 sm:block"
+              aria-hidden
+            />
+          </header>
+
+          <div ref={scrollRef} onScroll={handleScroll} className="legal-page">
+            <div className="legal-doc">
+              <LegalDocBlocks blocks={isNotice ? noticeBlocks : licenseBlocks} />
             </div>
           </div>
 
-          <div
-            ref={scrollRef}
-            onScroll={handleScroll}
-            className="legal-page px-0 py-5 font-mono text-xs leading-relaxed text-zinc-300"
-          >
-            <div className="legal-doc break-words">
-              {legalBlocks.map((block, idx) => {
-                const isDivider = block.type === "divider";
-                const isHeading = block.type === "heading";
-                const blockClassName =
-                  block.type === "blank"
-                    ? "h-3"
-                    : block.type === "divider"
-                      ? "my-4"
-                      : block.type === "heading"
-                        ? "mt-5 mb-2"
-                        : "mb-3 leading-7";
-                return (
-                  <div
-                    key={`${idx}-${block.type}-${block.text}`}
-                    className={`${isHeading ? "font-normal text-retro-text" : "font-normal"} ${blockClassName}`}
-                    style={{ opacity: isDivider ? 0.65 : 1 }}
-                  >
-                    {block.type === "blank" ? " " : block.text}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="h-8" />
-          </div>
-
-          <div
-            className="px-0 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-            style={{
-              borderColor: accent + "25",
-            }}
-          >
+          <footer className="showcase-legal-actions">
             <button
+              type="button"
               onClick={isNotice ? onBack : () => setStep("notice")}
-              className="inline-flex items-center gap-2 text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-3 py-2 min-h-10"
+              className="showcase-focus-ring showcase-legal-btn-secondary inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border-[3px] border-solid px-3 py-2 text-sm font-mono font-semibold transition"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <ArrowLeft className="h-3.5 w-3.5 shrink-0" aria-hidden />
               {isNotice ? "Back to paths" : "Back to Notice"}
             </button>
 
-            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+            <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center sm:justify-end">
               {!scrolledToBottom && (
-                <span className="text-[11px] sm:text-xs font-mono text-retro-dim animate-pulse">
-                  ↓ scroll to read
+                <span className="showcase-legal-scroll-hint text-center text-[11px] font-mono animate-pulse sm:text-left sm:text-xs">
+                  Scroll to the bottom to continue
                 </span>
               )}
               <motion.button
-                animate={{ opacity: scrolledToBottom ? 1 : 0.35 }}
+                type="button"
+                animate={{ opacity: scrolledToBottom ? 1 : 0.45 }}
                 onClick={scrolledToBottom ? handlePrimary : undefined}
-                className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-mono font-semibold transition min-h-10"
-                style={{
-                  borderColor: scrolledToBottom ? accent + "70" : accent + "30",
-                  backgroundColor: scrolledToBottom
-                    ? accent + "20"
-                    : accent + "08",
-                  color: scrolledToBottom ? accent : accent + "60",
-                  cursor: scrolledToBottom ? "pointer" : "not-allowed",
-                  boxShadow: scrolledToBottom ? `0 0 20px ${glow}` : "none",
-                }}
+                aria-disabled={!scrolledToBottom}
+                className={`showcase-focus-ring showcase-legal-btn-primary inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border-[3px] border-solid px-4 py-2 text-sm font-mono font-semibold transition ${
+                  scrolledToBottom
+                    ? "showcase-legal-btn-primary--active cursor-pointer"
+                    : "showcase-legal-btn-primary--idle cursor-not-allowed"
+                }`}
               >
                 {btnLabel}
-                {!isNotice && <CheckCircle2 className="h-4 w-4" />}
+                {!isNotice && (
+                  <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                )}
               </motion.button>
             </div>
-          </div>
-        </div>
+          </footer>
+        </article>
 
-        <p className="mt-4 text-center text-xs font-mono text-retro-dim">
+        <p className="showcase-legal-disclaimer mt-6 mb-12 text-center text-xs font-mono leading-relaxed">
           {isNotice
-            ? "By continuing you acknowledge the attributions above."
-            : "By clicking accept you agree to the license terms."}
+            ? "By continuing, you acknowledge the notice above."
+            : "By accepting, you agree to the license terms above."}
         </p>
       </motion.div>
-    </div>
+    </main>
   );
 }
 
@@ -1687,9 +1744,12 @@ export default function App() {
   const total = slides.length;
   const s = slides[slideIndex];
   const currentSection = s?.section ?? "Pitch";
+  const currentSectionIndex = Math.max(
+    0,
+    sectionEntries.findIndex((e) => e.label === currentSection),
+  );
 
   const accent = pathAccent(path);
-  const glow = pathGlow(path);
 
   const canPrev = slideIndex > 0;
   const canNext = slideIndex < total - 1;
@@ -1760,71 +1820,71 @@ export default function App() {
     swipeLockedToScroll.current = false;
   };
 
-  if (!path)
-    return (
-      <>
-        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
-        <PillChoice onChoose={choosePath} theme={theme} />
-      </>
-    );
-  if (!legalDone)
-    return (
-      <>
-        <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
-        <LegalGate
-          path={path}
-          onAccept={() => setLegalDone(true)}
-          onBack={() => setPath(null)}
-        />
-      </>
-    );
+  useEffect(() => {
+    const brand = "Observantio Watchdog";
+    if (!path) {
+      document.title = `${brand} — LGTM stack showcase`;
+      return;
+    }
+    if (!legalDone) {
+      document.title = `Notice & license — ${brand}`;
+      return;
+    }
+    const segment =
+      path === "understand" ? "Platform tour" : "Install & deploy";
+    document.title = `${segment} — ${brand}`;
+  }, [path, legalDone]);
 
-  const progressPct = total ? Math.round(((slideIndex + 1) / total) * 100) : 0;
+  const showSlides = path !== null && legalDone;
+  const progressPct =
+    showSlides && total > 0
+      ? Math.round(((slideIndex + 1) / total) * 100)
+      : 0;
   const pathLabel =
     path === "understand"
       ? "Platform Understanding — The Why"
       : path === "use"
         ? "Deployment Fast Track — Install & Use"
-        : "Documentation — Product Guide";
+        : "";
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text font-sans selection:bg-retro-glow/20">
+    <>
+      <ShowcaseBgFx visible={theme === "dark"} />
       <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
-      <div className="pointer-events-none fixed inset-0 opacity-[0.025]">
-        <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:100%_3px]" />
-      </div>
-
-      <div className="pointer-events-none fixed inset-0">
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full opacity-[0.03] blur-3xl"
-          style={{ backgroundColor: accent }}
+      {!path ? (
+        <PillChoice onChoose={choosePath} theme={theme} />
+      ) : !legalDone ? (
+        <LegalGate
+          path={path}
+          onAccept={() => setLegalDone(true)}
+          onBack={() => setPath(null)}
         />
-      </div>
+      ) : (
+        <div className="showcase-page min-h-screen text-retro-text font-sans selection:bg-retro-glow/20 relative z-10 pb-6">
+          <div className="showcase-fixed-grid" aria-hidden />
 
-      <div className="relative mx-auto max-w-5xl px-4 sm:px-5 py-6 sm:py-8">
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="pointer-events-none fixed inset-0 z-[1]">
             <div
-              className="h-11 w-11 rounded-2xl border flex items-center justify-center overflow-hidden"
+              className="absolute top-[12%] left-[8%] h-[420px] w-[420px] rounded-full opacity-[0.14] blur-[100px]"
+              style={{ backgroundColor: accent }}
+            />
+            <div
+              className="absolute bottom-[5%] right-[5%] h-[380px] w-[380px] rounded-full opacity-[0.1] blur-[90px]"
               style={{
-                backgroundColor: accent + "15",
-                borderColor: accent + "40",
-                boxShadow: `0 6px 18px ${glow}`,
+                backgroundColor:
+                  path === "understand" ? "#9059ff" : "#ff7139",
               }}
-            >
-              <img
-                src={withBaseUrl("/wolf.png")}
-                alt="Watchdog favicon"
-                className="h-7 w-7"
-              />
+            />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 pt-6 sm:pt-10 pb-10 sm:pb-14 w-full">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-retro-dim">
+              Watchdog
             </div>
-            <div>
-              <div className="text-xs font-mono uppercase tracking-wider text-retro-dim">
-                Watchdog
-              </div>
-              <div className="text-sm font-semibold" style={{ color: accent }}>
-                {pathLabel}
-              </div>
+            <div className="text-sm font-semibold text-retro-text">
+              {pathLabel}
             </div>
           </div>
 
@@ -1834,7 +1894,7 @@ export default function App() {
                 setPath(null);
                 setLegalDone(false);
               }}
-              className="text-xs font-mono text-retro-dim hover:text-zinc-300 transition border border-retro-border rounded-lg px-3 py-2 min-h-10"
+              className="showcase-focus-ring showcase-header-link-btn text-xs font-mono transition rounded-lg px-3 py-2 min-h-10 border"
             >
               ⇄ switch path
             </button>
@@ -1865,14 +1925,9 @@ export default function App() {
                   onClick={() => go(entry.index)}
                   className={
                     isActive
-                      ? "showcase-section-tab showcase-section-tab-active inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-mono transition"
-                      : "showcase-section-tab inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-mono transition"
+                      ? "showcase-section-tab showcase-section-tab-active inline-flex min-h-10 items-center gap-2 rounded-xl border-solid px-3 py-2 text-xs font-mono transition"
+                      : "showcase-section-tab inline-flex min-h-10 items-center gap-2 rounded-xl border-solid px-3 py-2 text-xs font-mono transition"
                   }
-                  style={{
-                    borderColor: isActive ? accent + "55" : undefined,
-                    color: isActive ? accent : undefined,
-                    boxShadow: isActive ? `0 12px 28px ${accent}20` : undefined,
-                  }}
                 >
                   <span className="text-[10px] uppercase tracking-[0.16em] opacity-70">
                     {String(index + 1).padStart(2, "0")}
@@ -1885,7 +1940,7 @@ export default function App() {
         )}
 
         <main className="mt-8">
-          <div className="overflow-hidden">
+          <div className="overflow-hidden showcase-slide-shell px-4 sm:px-8 py-5 sm:py-8">
             <div
               ref={slideFrameRef}
               className="px-0 py-3 sm:py-5 relative min-h-[440px] sm:min-h-[520px]"
@@ -1895,17 +1950,30 @@ export default function App() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${path}-${slideIndex}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.22 }}
+                  transition={motionSpring}
                 >
+                  <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-retro-dim">
+                    <span>
+                      Section {currentSectionIndex + 1} /{" "}
+                      {sectionEntries.length || 1}
+                    </span>
+                    <span className="select-none opacity-45" aria-hidden>
+                      |
+                    </span>
+                    <span className="font-semibold text-retro-text">
+                      {currentSection}
+                    </span>
+                  </div>
+
                   {s?.kicker && (
                     <div
-                      className="text-sm font-mono font-bold uppercase tracking-[0.18em]"
-                      style={{ color: accent }}
+                      className="border-l-[4px] pl-3 text-sm font-mono font-bold uppercase tracking-[0.18em] text-retro-text"
+                      style={{ borderLeftColor: accent }}
                     >
-                      <span style={{ color: accent }}>{">"}</span> {s.kicker}
+                      {s.kicker}
                     </div>
                   )}
 
@@ -1914,7 +1982,7 @@ export default function App() {
                   </h1>
 
                   {s?.subtitle && (
-                    <p className="mt-4 text-sm sm:text-lg text-zinc-300/90 max-w-3xl leading-relaxed">
+                    <p className="showcase-slide-subtitle mt-4 max-w-3xl text-sm leading-relaxed sm:text-lg">
                       {s.subtitle}
                     </p>
                   )}
@@ -1936,15 +2004,16 @@ export default function App() {
               }}
             >
               <button
-                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-mono transition disabled:opacity-30 min-h-10"
-                style={{
-                  borderColor: canPrev ? accent + "50" : "transparent",
-                  color: canPrev ? accent : undefined,
-                }}
+                type="button"
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl border-[3px] border-solid px-3 py-2 text-xs font-mono font-semibold transition sm:text-sm ${
+                  canPrev
+                    ? "border-[#2d1b48] bg-[#fff9e8] text-[#2d1b48] hover:bg-[#ffecb8]"
+                    : "border-transparent text-retro-dim opacity-35"
+                }`}
                 onClick={() => canPrev && go(slideIndex - 1)}
                 disabled={!canPrev}
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 shrink-0" />
                 Prev
               </button>
 
@@ -1966,33 +2035,33 @@ export default function App() {
               </div>
 
               <button
-                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs sm:text-sm font-mono transition disabled:opacity-30 min-h-10"
-                style={{
-                  borderColor: canNext ? accent + "50" : "transparent",
-                  color: canNext ? accent : undefined,
-                }}
+                type="button"
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl border-[3px] border-solid px-3 py-2 text-xs font-mono font-semibold transition sm:text-sm ${
+                  canNext
+                    ? "border-[#2d1b48] bg-[#fff9e8] text-[#2d1b48] hover:bg-[#ffecb8]"
+                    : "border-transparent text-retro-dim opacity-35"
+                }`}
                 onClick={() => canNext && go(slideIndex + 1)}
                 disabled={!canNext}
               >
                 Next
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 pb-4 sm:pb-8">
             <div className="text-xs font-mono text-retro-dim">
               ← → keys · swipe to navigate
             </div>
-            <div
-              className="text-xs font-mono text-retro-dim"
-              style={{ color: theme === "light" ? "#0f172a" : accent }}
-            >
+            <div className="showcase-slide-progress-meta text-xs font-mono">
               {slideIndex + 1} of {total} · {progressPct}% complete
             </div>
           </div>
         </main>
-      </div>
-    </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
