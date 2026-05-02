@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:info": "node ./scripts/generate-build-info.js",
-    "build": "npm run build:info && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "sync:origin": "bash scripts/sync-origin-main.sh"
