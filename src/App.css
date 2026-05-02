@@ -52,7 +52,14 @@ body,
 }
 
 html {
-  font-family: "Noto Serif", Georgia, "Times New Roman", serif;
+  font-family:
+    "Ubuntu Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    "Courier New",
+    monospace;
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
@@ -691,7 +698,14 @@ body::before {
 
 .showcase-legal-masthead-title {
   margin: 0;
-  font-family: "Noto Serif", Georgia, serif;
+  font-family:
+    "Ubuntu Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    "Courier New",
+    monospace;
   font-size: clamp(1.25rem, 2.5vw, 1.5rem);
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -732,7 +746,14 @@ body::before {
 .legal-doc-section-title {
   margin-top: 1.75rem;
   margin-bottom: 0.75rem;
-  font-family: "Noto Serif", Georgia, serif;
+  font-family:
+    "Ubuntu Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    "Courier New",
+    monospace;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -757,7 +778,14 @@ body::before {
 
 .legal-doc-p {
   margin: 0 0 0.85rem;
-  font-family: "Noto Serif", Georgia, serif;
+  font-family:
+    "Ubuntu Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    "Courier New",
+    monospace;
   font-size: 0.9375rem;
   line-height: 1.65;
   color: rgb(45 27 72 / 0.92);
